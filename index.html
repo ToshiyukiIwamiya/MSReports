@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-  　<link rel="apple-touch-icon" href="MSJ192.png">
-  　<meta name="apple-mobile-web-app-capable" content="yes">
-  　<meta name="apple-mobile-web-app-status-bar-style" content="default">
-  　<meta name="apple-mobile-web-app-title" content="就業報告書">
+    <link rel="apple-touch-icon" href="MSJ192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="就業報告書">
     <title>就業報告書 入力システム</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -63,11 +63,10 @@
                 height: 24px !important;
                 font-size: 12px !important;
             }
-            /* 値が空のinputやtextareaのプレースホルダーを透明にする */
             input:placeholder-shown,
             textarea:placeholder-shown {
                 color: transparent !important;
-                -webkit-text-fill-color: transparent !important; /* Safari/Chrome対策 */
+                -webkit-text-fill-color: transparent !important;
             }
         }
         input, textarea, select {
@@ -129,63 +128,63 @@
     <!-- 操作パネル (no-print) -->
     <div class="max-w-[210mm] mx-auto mb-3 px-4 no-print bg-white p-3 rounded-lg shadow border border-slate-200">
         <h1 class="text-lg font-bold text-slate-800">就業報告書 入力・作成フォーム</h1>
-        <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
-            <!-- 1. チェックボックス：「会員用に摘要名と項目名をロックする」 -->
+        <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 mt-2">
+            <!-- チェックボックス：「会員用に摘要名と項目名をロックする」 -->
             <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer bg-slate-50 px-2 py-1.5 rounded border border-slate-300 select-none">
-                <input type="checkbox" id="is-locked-checkbox" onchange="()" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                <span>項目名ロック</span>toggleLockState
+                <input type="checkbox" id="is-locked-checkbox" onchange="toggleLockState()" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                <span>項目名ロック</span>
             </label>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
-            <!-- 2. 音声入力（マイクアイコン付き） -->
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 mt-2">
+            <!-- 音声入力ボタン -->
             <button id="voice-btn" onclick="toggleVoiceInput()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                 <span id="voice-btn-text">音声入力</span>
             </button>
 
-            <!-- 3. ファイル読込 (JSONインポート / 複数選択対応) -->
+            <!-- ファイル読込 -->
             <label class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded shadow cursor-pointer transition flex items-center">
                 <span>ファイル読込</span>
                 <input type="file" id="import-file" accept=".json" multiple class="hidden" onchange="importJSONFiles(event)">
             </label>
 
-            <!-- 4. ファイル保存 (JSONエクスポート) -->
+            <!-- ファイル保存 -->
             <button onclick="exportJSONFile()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 ファイル保存
             </button>
 
-            <!-- 5. 一時保存（LocalStorageへ保存） -->
+            <!-- 一時保存 -->
             <button onclick="saveToLocalStorageManually()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 一時保存
             </button>
 
-            <!-- 6. クリア（LocalStorageを消去してリロード） -->
+            <!-- クリア -->
             <button onclick="clearLocalStorageAndReload()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 クリア
             </button>
 
-            <!-- 7. 印刷（window.print） -->
+            <!-- 印刷 -->
             <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 印刷
             </button>
 
-            <!-- 8. PDF保存（html2pdf.js） -->
+            <!-- PDF保存 -->
             <button onclick="saveAsPDF()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 PDF保存
             </button>
 
-            <!-- 9. メール送信（mailto） -->
+            <!-- メール送信 -->
             <button onclick="sendEmailReport()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 メール送信
             </button>
 
-            <!-- 提出履歴管理モーダルを開くボタン（一番最後） -->
+            <!-- 提出履歴管理 -->
             <button onclick="openHistoryModal()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 提出履歴管理
             </button>
         </div>
-        <div id="voice-status" class="mt-1.5 text-xs text-emerald-700 font-medium hidden">🎤 音声認識中...話してください</div>
+        <div id="voice-status" class="mt-1.5 text-xs text-emerald-700 font-semibold hidden">🎤 音声認識中...話してください</div>
     </div>
 
     <!-- 横幅が狭い端末でもレイアウトが潰れないスクロールラッパー -->
@@ -405,12 +404,42 @@
     </div>
     </div>
 
+    <!-- モーダル各種 -->
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden no-print z-50">
+        <div class="bg-white p-5 rounded-lg max-w-md w-full shadow-xl">
+            <h3 class="text-base font-bold mb-3 text-slate-800">提出履歴管理</h3>
+            <div id="history-list" class="max-h-60 overflow-y-auto border border-slate-200 rounded p-2 mb-3 text-xs space-y-2">
+                <!-- 履歴アイテム -->
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeHistoryModal()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 text-xs px-3 py-1.5 rounded">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- カスタムメッセージモーダル -->
+    <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden no-print z-50">
+        <div class="bg-white p-5 rounded-lg max-w-sm w-full shadow-xl text-center">
+            <p id="message-modal-text" class="text-sm font-medium text-slate-800 mb-4"></p>
+            <button onclick="closeMessageModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded">OK</button>
+        </div>
+    </div>
+
     <script>
         const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
         let autoSaveTimer = null;
         let recognition = null;
         let isListening = false;
-        let focusedInputBeforeVoice = null;
+        let lastFocusedElement = null;
+
+        function showMessage(text) {
+            document.getElementById('message-modal-text').textContent = text;
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('message-modal').classList.add('hidden');
+        }
 
         function initReport() {
             const yearSelect = document.getElementById('report-year');
@@ -438,13 +467,18 @@
                 monthSelect.appendChild(opt);
             }
 
-            // ローカルストレージからの復元
             loadFromLocalStorage();
             updateCalendar();
             initSpeechRecognition();
+
+            // フォーカスを常に追跡
+            document.addEventListener('focusin', (e) => {
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) {
+                    lastFocusedElement = e.target;
+                }
+            });
         }
 
-        // デバウンス付き自動保存
         function triggerAutoSave() {
             clearTimeout(autoSaveTimer);
             autoSaveTimer = setTimeout(() => {
@@ -474,7 +508,6 @@
             triggerAutoSave();
         }
 
-        // 時間文字列（"900", "9:00", "0900" 等）を分単位にパース
         function parseTimeToMinutes(str) {
             if (!str) return null;
             let val = str.toString().trim().replace('：', ':');
@@ -484,7 +517,6 @@
                 return { minutes: 12 * 60, formatted: '12:00' };
             }
 
-            // 音声解析で変換された文字列への対応
             let h = 0, m = 0;
             if (val.includes(':')) {
                 const parts = val.split(':');
@@ -590,9 +622,7 @@
             if (evalType17) evalType17.value = val;
 
             const itemName1 = document.getElementById('item-name-1');
-            if (itemName1) {
-                itemName1.value = val;
-            }
+            if (itemName1) itemName1.value = val;
             calculateTotals();
             triggerAutoSave();
         }
@@ -706,11 +736,6 @@
                             colHasNum = true;
                         }
                     });
-                    const totalField = document.getElementById(`f2-col-total-${colIdx}`);
-                    if (totalField) {
-                        totalField.value = colHasNum ? formatNumber(colSum) : '';
-                    }
-
                     const countField = document.getElementById(`p${colIdx}-count`);
                     if (countField) {
                         countField.value = colHasNum ? colSum : '';
@@ -754,28 +779,6 @@
                         }
                     }
                 }
-//
-//                for (let colIdx = 1; colIdx <= 2; colIdx++) {
-//                    let totalMinutes = 0;
-//                    let hasTime = false;
-//                    document.querySelectorAll(`.entry-f3-c${colIdx}`).forEach(input => {
-//                        const parsed = parseTimeToMinutes(input.value);
-//                        if (parsed) {
-//                            totalMinutes += parsed.minutes;
-//                            hasTime = true;
-//                        }
-//                    });
-//                    const totalField = document.getElementById(`f3-col-total-${colIdx}`);
-//                    if (totalField) {
-//                        if (hasTime) {
-//                            const th = Math.floor(totalMinutes / 60);
-//                            const tm = totalMinutes % 60;
-//                            totalField.value = `${th}:${tm.toString().padStart(2, '0')}`;
-//                        } else {
-//                            totalField.value = '';
-//                        }
-//                    }
-//                }
             } else if (format === 4) {
                 const evalTypeEl = document.getElementById('f4-eval-type-1');
                 const evalType = evalTypeEl ? evalTypeEl.value : '時間';
@@ -826,28 +829,6 @@
                         }
                     }
                 }
-//
-//                for (let colIdx = 1; colIdx <= 4; colIdx++) {
-//                    let totalMinutes = 0;
-//                    let hasTime = false;
-//                    document.querySelectorAll(`.entry-f4-c${colIdx}`).forEach(input => {
-//                        const parsed = parseTimeToMinutes(input.value);
-//                        if (parsed) {
-//                            totalMinutes += parsed.minutes;
-//                            hasTime = true;
-//                        }
-//                    });
-//                    const totalField = document.getElementById(`f4-col-total-${colIdx}`);
-//                    if (totalField) {
-//                        if (hasTime) {
-//                            const th = Math.floor(totalMinutes / 60);
-//                            const tm = totalMinutes % 60;
-//                            totalField.value = `${th}:${tm.toString().padStart(2, '0')}`;
-//                        } else {
-//                            totalField.value = '';
-//                        }
-//                    }
-//                }
             }
 
             const evalInputs = document.querySelectorAll('.eval-input');
@@ -861,19 +842,6 @@
                     hasValidNumber = true;
                 }
             });
-
-            const grandTotalEvalEl = document.getElementById('grand-total-eval');
-            if (grandTotalEvalEl) {
-                const evalType = format === 1 ? (document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数') :
-                                 format === 3 ? (document.getElementById('f3-eval-type-1') ? document.getElementById('f3-eval-type-1').value : '時間') :
-                                 format === 4 ? (document.getElementById('f4-eval-type-1') ? document.getElementById('f4-eval-type-1').value : '時間') :
-                                 format === 2 ? '件数' : '時間';
-                if (hasValidNumber && grandSum !== 0) {
-                    grandTotalEvalEl.value = (evalType === '時間') ? grandSum.toFixed(2) : grandSum.toString();
-                } else {
-                    grandTotalEvalEl.value = '';
-                }
-            }
 
             if (format === 1 || format === 3 || format === 4) {
                 const p1Count = document.getElementById('p1-count');
@@ -1008,8 +976,8 @@
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
-                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="開始時間" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="終了時間" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 16%;">出勤</th>
+                    <th style="width: 16%;">退勤</th>
                     <th class="col-eval">
                         <select id="f3-eval-type-1" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat3EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
@@ -1018,8 +986,8 @@
                     </th>
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
-                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="開始時間" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="終了時間" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 16%;">出勤</th>
+                    <th style="width: 16%;">退勤</th>
                     <th class="col-eval">
                         <select id="f3-eval-type-2" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat3EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
@@ -1027,222 +995,404 @@
                         </select>
                     </th>
                 `;
-                const s1 = document.getElementById('f3-eval-type-1');
-                const s2 = document.getElementById('f3-eval-type-2');
-                ensureOptionExists(s1, currentEvalType);
-                ensureOptionExists(s2, currentEvalType);
-                if (s1) s1.value = currentEvalType;
-                if (s2) s2.value = currentEvalType;
             } else if (format === 4) {
                 const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
                 headerRow.innerHTML = `
-                    <th class="col-day">日</th>
-                    <th class="col-wday">曜日</th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始1" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了1" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始2" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了2" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th class="col-eval">
+                    <th class="col-day" rowspan="2">日</th>
+                    <th class="col-wday" rowspan="2">曜日</th>
+                    <th colspan="2" style="width: 32%;">午前</th>
+                    <th class="col-eval" rowspan="2">
                         <select id="f4-eval-type-1" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat4EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                         </select>
                     </th>
-                    <th class="col-day">日</th>
-                    <th class="col-wday">曜日</th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始1" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了1" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始2" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了2" readonly style="background:transparent;" tabindex="-1"></th>
-                    <th class="col-eval">
+                    <th class="col-day" rowspan="2">日</th>
+                    <th class="col-wday" rowspan="2">曜日</th>
+                    <th colspan="2" style="width: 32%;">午前</th>
+                    <th class="col-eval" rowspan="2">
                         <select id="f4-eval-type-2" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat4EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                         </select>
                     </th>
                 `;
-                const s1 = document.getElementById('f4-eval-type-1');
-                const s2 = document.getElementById('f4-eval-type-2');
-                ensureOptionExists(s1, currentEvalType);
-                ensureOptionExists(s2, currentEvalType);
-                if (s1) s1.value = currentEvalType;
-                if (s2) s2.value = currentEvalType;
             }
 
-            const daysInMonth = new Date(year, month, 0).getDate();
-
-            for (let i = 1; i <= 15; i++) {
-                const i2 = i + 16;
-                const d1 = i;
-                const isValid1 = d1 <= daysInMonth;
-                const w1 = isValid1 ? weekdays[new Date(year, month - 1, d1).getDay()] : '';
-
-                const d2 = i2 <= daysInMonth ? i2 : null;
-                const isValid2 = d2 !== null;
-                const w2 = isValid2 ? weekdays[new Date(year, month - 1, d2).getDay()] : '';
+            for (let i = 1; i <= 16; i++) {
+                const day1 = i;
+                const day2 = i + 16 <= 31 ? i + 16 : null;
 
                 const tr = document.createElement('tr');
-                if (format === 1) {
-                    tr.innerHTML = `
-                        <td class="text-center font-bold bg-slate-50 col-day">${isValid1 ? d1 : ''}</td>
-                        <td class="text-center col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f1-text-${d1}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f1-eval-${d1}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="text-center font-bold bg-slate-50 col-day">${isValid2 ? d2 : ''}</td>
-                        <td class="text-center col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f1-text-${d2}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f1-eval-${d2}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                    `;
-                } else if (format === 2) {
-                    tr.innerHTML = `
-                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
-                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n1-${d1}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n2-${d1}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f2-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
-                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
-                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n1-${d2}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n2-${d2}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f2-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
-                    `;
-                } else if (format === 3) {
-                    tr.innerHTML = `
-                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
-                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-start-${d1}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-end-${d1}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f3-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
-                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
-                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-start-${d2}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-end-${d2}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f3-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
-                    `;
-                } else if (format === 4) {
-                    tr.innerHTML = `
-                        <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1 ? d1 : ''}</td>
-                        <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-s1-${d1}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-e1-${d1}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-s2-${d1}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-e2-${d1}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f4-eval-${d1}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
-                        <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid2 ? d2 : ''}</td>
-                        <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-s1-${d2}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-e1-${d2}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-s2-${d2}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-e2-${d2}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f4-eval-${d2}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
-                    `;
-                }
+                tr.innerHTML = generateRowHTML(format, day1, year, month) + (day2 ? generateRowHTML(format, day2, year, month) : `
+                    <td class="col-day bg-slate-50"></td>
+                    <td class="col-wday bg-slate-50"></td>
+                    ${format === 1 ? '<td colspan="2"></td><td class="col-eval"></td>' :
+                      format === 2 ? '<td colspan="2"></td><td class="col-eval"></td>' :
+                      format === 3 ? '<td colspan="2"></td><td class="col-eval"></td>' :
+                      '<td colspan="3"></td><td class="col-eval"></td>'}
+                `);
                 tbody.appendChild(tr);
             }
 
-            const tr16 = document.createElement('tr');
-            tbody.appendChild(tr16);
-            buildTotalRow(format, tr16, year, month);
-            applyLockStateToElements(); // ロック状態の適用
-        }
-
-        function buildTotalRow(format, tr16, year, month) {
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const d1_16 = 16;
-            const isValid1_16 = d1_16 <= daysInMonth;
-            const w1_16 = isValid1_16 ? weekdays[new Date(year, month - 1, d1_16).getDay()] : '';
-
-            if (format === 1) {
-                tr16.innerHTML = `
-                    <td class="text-center font-bold bg-slate-50 col-day">${isValid1_16 ? d1_16 : ''}</td>
-                    <td class="text-center col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f1-text-${d1_16}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td class="col-eval"><input type="text" id="f1-eval-${d1_16}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td colspan="2" class="text-center font-bold bg-slate-100">合計</td>
-                    <td><input type="text" readonly style="background:transparent;"></td>
-                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
-                `;
-            } else if (format === 2) {
-                tr16.innerHTML = `
-                    <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
-                    <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f2-n1-${d1_16}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f2-n2-${d1_16}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td class="col-eval"><input type="text" id="f2-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
-                    <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
-                    <td><input type="text" id="f2-col-total-1" class="text-right font-bold bg-slate-50" readonly placeholder=""></td>
-                    <td><input type="text" id="f2-col-total-2" class="text-right font-bold bg-slate-50" readonly placeholder=""></td>
-                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
-                `;
-            } else if (format === 3) {
-                tr16.innerHTML = `
-                    <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
-                    <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-start-${d1_16}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-end-${d1_16}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td class="col-eval"><input type="text" id="f3-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
-                    <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
-                    <td><input type="text" id="f3-col-total-1" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
-                    <td><input type="text" id="f3-col-total-2" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
-                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
-                `;
-            } else if (format === 4) {
-                tr16.innerHTML = `
-                    <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1_16 ? d1_16 : ''}</td>
-                    <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-s1-${d1_16}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-e1-${d1_16}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-s2-${d1_16}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-e2-${d1_16}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td class="col-eval"><input type="text" id="f4-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
-                    <td colspan="2" class="text-center font-bold bg-slate-100 text-[10px]">合計</td>
-                    <td><input type="text" id="f4-col-total-1" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
-                    <td><input type="text" id="f4-col-total-2" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
-                    <td><input type="text" id="f4-col-total-3" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
-                    <td><input type="text" id="f4-col-total-4" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
-                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
-                `;
-            }
+            // 合計行
+            const totalTr = document.createElement('tr');
+            totalTr.className = 'bg-slate-100 font-bold text-center';
+            totalTr.innerHTML = `
+                <td colspan="2">合　計</td>
+                <td colspan="${format === 4 ? 3 : (format === 3 ? 2 : (format === 2 ? 2 : 1))}"></td>
+                <td><input type="text" id="grand-total-eval" class="text-center font-bold text-xs" readonly placeholder="0"></td>
+                <td colspan="2"></td>
+                <td colspan="${format === 4 ? 3 : (format === 3 ? 2 : (format === 2 ? 2 : 1))}"></td>
+                <td></td>
+            `;
+            tbody.appendChild(totalTr);
 
             calculateTotals();
         }
 
-        // ロックチェックボックス変更時の処理
-        function toggleLockState() {
-            applyLockStateToElements();
-            triggerAutoSave();
+        function generateRowHTML(format, day, year, month) {
+            const dateObj = new Date(year, month - 1, day);
+            const isValidDate = dateObj.getMonth() === month - 1;
+            const wday = isValidDate ? weekdays[dateObj.getDay()] : '';
+            const wdayColor = dateObj.getDay() === 0 ? 'text-rose-600 font-bold' : (dateObj.getDay() === 6 ? 'text-blue-600 font-bold' : '');
+
+            if (!isValidDate) {
+                return `
+                    <td class="col-day text-center text-gray-400"></td>
+                    <td class="col-wday text-center text-gray-400"></td>
+                    ${format === 1 ? '<td></td><td class="col-eval"></td>' :
+                      format === 2 ? '<td></td><td></td><td class="col-eval"></td>' :
+                      format === 3 ? '<td></td><td></td><td class="col-eval"></td>' :
+                      '<td colspan="2"></td><td class="col-eval"></td>'}
+                `;
+            }
+
+            if (format === 1) {
+                return `
+                    <td class="col-day text-center">${day}</td>
+                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
+                    <td><input type="text" id="f1-text-${day}" class="text-xs" oninput="calculateTotals(); triggerAutoSave()" placeholder=""></td>
+                    <td class="col-eval"><input type="text" id="f1-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                `;
+            } else if (format === 2) {
+                return `
+                    <td class="col-day text-center">${day}</td>
+                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
+                    <td><input type="text" id="f2-n1-${day}" class="text-right text-xs entry-f2-c1" oninput="calculateTotals(); triggerAutoSave()" placeholder=""></td>
+                    <td><input type="text" id="f2-n2-${day}" class="text-right text-xs entry-f2-c2" oninput="calculateTotals(); triggerAutoSave()" placeholder=""></td>
+                    <td class="col-eval"><input type="text" id="f2-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                `;
+            } else if (format === 3) {
+                return `
+                    <td class="col-day text-center">${day}</td>
+                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
+                    <td><input type="text" id="f3-start-${day}" class="text-center text-xs entry-f3-c1" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
+                    <td><input type="text" id="f3-end-${day}" class="text-center text-xs entry-f3-c2" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
+                    <td class="col-eval"><input type="text" id="f3-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                `;
+            } else if (format === 4) {
+                return `
+                    <td class="col-day text-center">${day}</td>
+                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
+                    <td><input type="text" id="f4-s1-${day}" class="text-center text-xs entry-f4-c1" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
+                    <td><input type="text" id="f4-e1-${day}" class="text-center text-xs entry-f4-c2" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
+                    <td class="col-eval" rowspan="1"><input type="text" id="f4-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                `;
+            }
         }
 
-        function applyLockStateToElements() {
-            const isLocked = document.getElementById('is-locked-checkbox').checked;
-            // 表ヘッダーおよび配分金の単位・項目名入力欄（locked-targetクラス）
-            const lockedTargets = document.querySelectorAll('.locked-target, #table-header-row input, #table-header-row select');
-            lockedTargets.forEach(el => {
-                if (isLocked) {
-                    if (el.tagName === 'SELECT') {
-                        el.disabled = true;
-                    } else {
-                        el.setAttribute('readonly', 'true');
-                    }
-                    el.classList.add('bg-slate-100', 'cursor-not-allowed');
-                } else {
-                    if (el.tagName === 'SELECT') {
-                        el.disabled = false;
-                    } else {
-                        el.removeAttribute('readonly');
-                    }
-                    el.classList.remove('bg-slate-100', 'cursor-not-allowed');
+        // ==========================================
+        // 音声認識（Web Speech API）の実装
+        // ==========================================
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn("このブラウザはWeb Speech APIをサポートしていません。");
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.continuous = false;
+
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('voice-btn-text').textContent = "音声停止";
+                document.getElementById('voice-btn').classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                document.getElementById('voice-btn').classList.add('bg-rose-600', 'hover:bg-rose-700');
+                document.getElementById('voice-status').classList.remove('hidden');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log("音声認識結果:", transcript);
+                processVoiceCommand(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                console.error("音声認識エラー:", event.error);
+                stopVoiceInput();
+            };
+
+            recognition.onend = () => {
+                stopVoiceInput();
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                showMessage("お使いのブラウザは音声入力に対応していません。");
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error(e);
                 }
-            });
+            }
         }
 
-        // データの収集（エクスポート・保存用）
-        function collectFormData() {
+        function stopVoiceInput() {
+            isListening = false;
+            document.getElementById('voice-btn-text').textContent = "音声入力";
+            document.getElementById('voice-btn').classList.remove('bg-rose-600', 'hover:bg-rose-700');
+            document.getElementById('voice-btn').classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            document.getElementById('voice-status').classList.add('hidden');
+        }
+
+        // 時間文字列・数値の変換ロジック
+        function parseSpokenTime(text) {
+            if (!text) return null;
+            let t = text.trim();
+
+            if (t.includes('正午')) return '12:00';
+
+            // 数字の抽出
+            // 例: "9時半" -> h=9, m=30
+            let has午後 = t.includes('午後') || t.includes('夕方') || t.includes('夜');
+            
+            // 漢数字を算用数字に置換する簡易ヘルパー
+            t = t.replace(/十/g, '1')
+                 .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
+                 .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
+                 .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9');
+
+            let hourMatch = t.match(/(\d{1,2})\s*時/);
+            let minMatch = t.match(/(\d{1,2})\s*分/);
+            let hasHan = t.includes('半');
+
+            if (!hourMatch) {
+                // "15:30" や "900" の形式
+                let directTime = parseTimeToMinutes(t);
+                return directTime ? directTime.formatted : null;
+            }
+
+            let h = parseInt(hourMatch[1], 10);
+            let m = minMatch ? parseInt(minMatch[1], 10) : (hasHan ? 30 : 0);
+
+            // ルール: 「午後」「夕方」「夜」があれば+12時間。また1時台〜6時台までは+12時間（午前指定がない限り午後とみなす日本的な入力サポート）
+            if (has午後) {
+                if (h < 12) h += 12;
+            } else if (h >= 1 && h <= 6) {
+                h += 12;
+            }
+
+            if (h >= 24) h = 24;
+
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        // 和風の日の読み方を数字に変換
+        function parseDayWord(text) {
+            const map = {
+                'ついたち': 1, '一日': 1,
+                'ふつか': 2, '二日': 2,
+                'みっか': 3, '三日': 3,
+                'よっか': 4, '四日': 4,
+                'いつか': 5, '五日': 5,
+                'むいか': 6, '六日': 6,
+                'なのか': 7, '七日': 7,
+                'ようか': 8, '八日': 8,
+                'ここのか': 9, '九日': 9,
+                'とおか': 10, '十日': 10,
+                'はつか': 20, '二十日': 20
+            };
+            for (let key in map) {
+                if (text.includes(key)) return map[key];
+            }
+            let m = text.match(/(\d{1,2})\s*日/);
+            if (m) return parseInt(m[1], 10);
+            return null;
+        }
+
+        // 賢い音声解析ロジックのメイン処理
+        function processVoiceCommand(transcript) {
+            const format = parseInt(document.getElementById('report-format').value);
+            const activeEl = lastFocusedElement;
+
+            console.log("解析テキスト:", transcript, "現在の様式:", format, "フォーカス要素:", activeEl ? activeEl.id : "なし");
+
+            // --- 共通要件：特定の日のデータ消去コマンド（例：「15日のデータ消して」） ---
+            if (transcript.includes('消す') || transcript.includes('クリア') || transcript.includes('削除')) {
+                let targetDay = parseDayWord(transcript);
+                if (targetDay && targetDay >= 1 && targetDay <= 31) {
+                    clearDataForDay(format, targetDay);
+                    calculateTotals();
+                    triggerAutoSave();
+                    showMessage(`${targetDay}日のデータをクリアしました。`);
+                    return;
+                }
+            }
+
+            // --- 特殊要件（様式3対応）：「15日 9時 17時」のように話した場合の一括入力 ---
+            if (format === 3) {
+                let dayVal = parseDayWord(transcript);
+                if (dayVal && (transcript.includes('時') || transcript.includes('から'))) {
+                    // 時間部分をすべて抽出
+                    let timeMatches = transcript.match(/(\d{1,2}\s*時[\d半分]*)?/g);
+                    // より確実に抽出するため正規表現を拡張
+                    let times = [];
+                    let regex = /(?:(\d{1,2})時)?(\d{1,2}分|半)?/g;
+                    // 話された文章から時刻フレーズを探す
+                    let matches = transcript.matchAll(/(午後|午前)?\s*(\d{1,2})\s*時(半|\d{1,2}分)?/g);
+                    let extractedTimes = [];
+                    for (const match of matches) {
+                        let fullStr = match[0];
+                        let parsedT = parseSpokenTime(fullStr);
+                        if (parsedT) extractedTimes.push(parsedT);
+                    }
+
+                    if (dayVal >= 1 && dayVal <= 31 && extractedTimes.length > 0) {
+                        let startInput = document.getElementById(`f3-start-${dayVal}`);
+                        let endInput = document.getElementById(`f3-end-${dayVal}`);
+                        if (startInput && extractedTimes[0]) startInput.value = extractedTimes[0];
+                        if (endInput && extractedTimes[1]) endInput.value = extractedTimes[1];
+                        calculateTotals();
+                        triggerAutoSave();
+                        showMessage(`${dayVal}日の勤務時間（${extractedTimes[0]} 〜 ${extractedTimes[1] || ''}）をセットしました。`);
+                        return;
+                    }
+                }
+            }
+
+            // --- フォーカス位置に応じた入力制御 ---
+            if (activeEl) {
+                const id = activeEl.id;
+
+                // 1. 作業内容欄
+                if (id === 'work-content-memo') {
+                    activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
+                    triggerAutoSave();
+                    return;
+                }
+                // 2. 事務局記入欄
+                if (id === 'secretariat-memo') {
+                    activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
+                    triggerAutoSave();
+                    return;
+                }
+                // 3. 配分金欄の項目名欄
+                if (id.startsWith('item-name-')) {
+                    activeEl.value = transcript.substring(0, 10);
+                    syncAllocationNames();
+                    triggerAutoSave();
+                    return;
+                }
+                // 4. 配分金欄の数値欄（単価や控除など）
+                if (id.includes('price') || id.includes('deduction') || id.includes('advance') || id.includes('material') || id.includes('admin')) {
+                    let numMatch = transcript.match(/\d+/);
+                    if (numMatch) {
+                        activeEl.value = numMatch[0];
+                        formatInput(activeEl);
+                    }
+                    return;
+                }
+
+                // 5. スケジュールの項目名・摘要項目欄・評価項目欄
+                if (id.startsWith('f1-h') || id.startsWith('f2-h')) {
+                    activeEl.value = transcript;
+                    triggerAutoSave();
+                    return;
+                }
+
+                // 6. スケジュールの特定の日の入力欄
+                // 様式1の摘要欄
+                if (format === 1 && id.startsWith('f1-text-')) {
+                    activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
+                    calculateTotals();
+                    triggerAutoSave();
+                    return;
+                }
+                // 様式2の数値欄
+                if (format === 2 && (id.startsWith('f2-n1-') || id.startsWith('f2-n2-'))) {
+                    let numMatch = transcript.match(/\d+/);
+                    if (numMatch) {
+                        activeEl.value = numMatch[0];
+                        calculateTotals();
+                        triggerAutoSave();
+                    }
+                    return;
+                }
+                // 様式3・様式4の時刻欄
+                if ((format === 3 || format === 4) && (id.includes('start') || id.includes('end') || id.includes('s1') || id.includes('e1') || id.includes('s2') || id.includes('e2'))) {
+                    let timeStr = parseSpokenTime(transcript);
+                    if (timeStr) {
+                        activeEl.value = timeStr;
+                        calculateTotals();
+                        triggerAutoSave();
+                    }
+                    return;
+                }
+            }
+
+            // フォールバック：フォーカスがない、あるいは一致しない場合は作業内容に追記
+            const memoArea = document.getElementById('work-content-memo');
+            if (memoArea) {
+                memoArea.value = (memoArea.value ? memoArea.value + " " : "") + transcript;
+                triggerAutoSave();
+                showMessage("作業内容欄に追記しました: " + transcript);
+            }
+        }
+
+        function clearDataForDay(format, day) {
+            if (format === 1) {
+                let el = document.getElementById(`f1-text-${day}`);
+                if (el) el.value = '';
+            } else if (format === 2) {
+                let e1 = document.getElementById(`f2-n1-${day}`);
+                let e2 = document.getElementById(`f2-n2-${day}`);
+                if (e1) e1.value = '';
+                if (e2) e2.value = '';
+            } else if (format === 3) {
+                let s = document.getElementById(`f3-start-${day}`);
+                let e = document.getElementById(`f3-end-${day}`);
+                if (s) s.value = '';
+                if (e) e.value = '';
+            } else if (format === 4) {
+                let s1 = document.getElementById(`f4-s1-${day}`);
+                let e1 = document.getElementById(`f4-e1-${day}`);
+                let s2 = document.getElementById(`f4-s2-${day}`);
+                let e2 = document.getElementById(`f4-e2-${day}`);
+                if (s1) s1.value = '';
+                if (e1) e1.value = '';
+                if (s2) s2.value = '';
+                if (e2) e2.value = '';
+            }
+        }
+
+        // ==========================================
+        // ストレージ・ファイル入出力・その他機能
+        // ==========================================
+        function collectReportData() {
             const data = {
                 format: document.getElementById('report-format').value,
                 year: document.getElementById('report-year').value,
                 month: document.getElementById('report-month').value,
-                isLocked: document.getElementById('is-locked-checkbox').checked,
                 workContentMemo: document.getElementById('work-content-memo').value,
                 contractTitle: document.getElementById('contract-title').value,
                 contractNo: document.getElementById('contract-no').value,
@@ -1250,48 +1400,63 @@
                 memberNo: document.getElementById('member-no').value,
                 memberName: document.getElementById('member-name').value,
                 secretariatMemo: document.getElementById('secretariat-memo').value,
-                itemNames: {},
-                financials: {},
-                inputs: {}
+                allocations: {
+                    name1: document.getElementById('item-name-1').value,
+                    price1: document.getElementById('p1-price').value,
+                    name2: document.getElementById('item-name-2').value,
+                    price2: document.getElementById('p2-price').value,
+                    name3: document.getElementById('item-name-3').value,
+                    price3: document.getElementById('p3-price').value,
+                    count3: document.getElementById('p3-count').value,
+                    name4: document.getElementById('item-name-4').value,
+                    deduction: document.getElementById('item-deduction').value,
+                    name5: document.getElementById('item-name-5').value,
+                    advance: document.getElementById('item-advance').value,
+                    name6: document.getElementById('item-name-6').value,
+                    material: document.getElementById('item-material').value,
+                    name7: document.getElementById('item-name-7').value,
+                    admin: document.getElementById('item-admin').value,
+                },
+                rows: {}
             };
 
-            // 項目名の保存
-            for (let i = 1; i <= 7; i++) {
-                const el = document.getElementById(`item-name-${i}`);
-                if (el) data.itemNames[`item-name-${i}`] = el.value;
-            }
-
-            // 金額系入力欄の保存
-            ['p1-price', 'p2-price', 'p3-price', 'p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) data.financials[id] = el.value;
-            });
-
-            // カレンダー表内の全input/select要素の保存
-            const tableInputs = document.querySelectorAll('#report-table-el input, #report-table-el select');
-            tableInputs.forEach(el => {
-                if (el.id) {
-                    data.inputs[el.id] = el.value;
+            for (let i = 1; i <= 31; i++) {
+                data.rows[i] = {};
+                if (data.format === '1') {
+                    let t = document.getElementById(`f1-text-${i}`);
+                    if (t) data.rows[i].text = t.value;
+                } else if (data.format === '2') {
+                    let n1 = document.getElementById(`f2-n1-${i}`);
+                    let n2 = document.getElementById(`f2-n2-${i}`);
+                    if (n1) data.rows[i].n1 = n1.value;
+                    if (n2) data.rows[i].n2 = n2.value;
+                } else if (data.format === '3') {
+                    let s = document.getElementById(`f3-start-${i}`);
+                    let e = document.getElementById(`f3-end-${i}`);
+                    if (s) data.rows[i].start = s.value;
+                    if (e) data.rows[i].end = e.value;
+                } else if (data.format === '4') {
+                    let s1 = document.getElementById(`f4-s1-${i}`);
+                    let e1 = document.getElementById(`f4-e1-${i}`);
+                    let s2 = document.getElementById(`f4-s2-${i}`);
+                    let e2 = document.getElementById(`f4-e2-${i}`);
+                    if (s1) data.rows[i].s1 = s1.value;
+                    if (e1) data.rows[i].e1 = e1.value;
+                    if (s2) data.rows[i].s2 = s2.value;
+                    if (e2) data.rows[i].e2 = e2.value;
                 }
-            });
-
+            }
             return data;
         }
 
-        // データの復元
-        function restoreFormData(data) {
+        function applyReportData(data) {
             if (!data) return;
-
             if (data.format) document.getElementById('report-format').value = data.format;
             if (data.year) document.getElementById('report-year').value = data.year;
             if (data.month) document.getElementById('report-month').value = data.month;
 
-            // 様式や年月を反映してカレンダーを再構築
             updateCalendar();
 
-            if (data.isLocked !== undefined) {
-                document.getElementById('is-locked-checkbox').checked = data.isLocked;
-            }
             if (data.workContentMemo !== undefined) document.getElementById('work-content-memo').value = data.workContentMemo;
             if (data.contractTitle !== undefined) document.getElementById('contract-title').value = data.contractTitle;
             if (data.contractNo !== undefined) document.getElementById('contract-no').value = data.contractNo;
@@ -1300,56 +1465,64 @@
             if (data.memberName !== undefined) document.getElementById('member-name').value = data.memberName;
             if (data.secretariatMemo !== undefined) document.getElementById('secretariat-memo').value = data.secretariatMemo;
 
-            if (data.itemNames) {
-                for (const [id, val] of Object.entries(data.itemNames)) {
-                    const el = document.getElementById(id);
-                    if (el) el.value = val;
+            if (data.allocations) {
+                const a = data.allocations;
+                if (a.name1) document.getElementById('item-name-1').value = a.name1;
+                if (a.price1) document.getElementById('p1-price').value = a.price1;
+                if (a.name2) document.getElementById('item-name-2').value = a.name2;
+                if (a.price2) document.getElementById('p2-price').value = a.price2;
+                if (a.name3) document.getElementById('item-name-3').value = a.name3;
+                if (a.price3) document.getElementById('p3-price').value = a.price3;
+                if (a.count3) document.getElementById('p3-count').value = a.count3;
+                if (a.name4) document.getElementById('item-name-4').value = a.name4;
+                if (a.deduction) document.getElementById('item-deduction').value = a.deduction;
+                if (a.name5) document.getElementById('item-name-5').value = a.name5;
+                if (a.advance) document.getElementById('item-advance').value = a.advance;
+                if (a.name6) document.getElementById('item-name-6').value = a.name6;
+                if (a.material) document.getElementById('item-material').value = a.material;
+                if (a.name7) document.getElementById('item-name-7').value = a.name7;
+                if (a.admin) document.getElementById('item-admin').value = a.admin;
+            }
+
+            if (data.rows) {
+                for (let i = 1; i <= 31; i++) {
+                    const r = data.rows[i];
+                    if (!r) continue;
+                    if (data.format === '1' && r.text !== undefined) {
+                        let el = document.getElementById(`f1-text-${i}`);
+                        if (el) el.value = r.text;
+                    } else if (data.format === '2') {
+                        let n1 = document.getElementById(`f2-n1-${i}`);
+                        let n2 = document.getElementById(`f2-n2-${i}`);
+                        if (n1 && r.n1 !== undefined) n1.value = r.n1;
+                        if (n2 && r.n2 !== undefined) n2.value = r.n2;
+                    } else if (data.format === '3') {
+                        let s = document.getElementById(`f3-start-${i}`);
+                        let e = document.getElementById(`f3-end-${i}`);
+                        if (s && r.start !== undefined) s.value = r.start;
+                        if (e && r.end !== undefined) e.value = r.end;
+                    } else if (data.format === '4') {
+                        let s1 = document.getElementById(`f4-s1-${i}`);
+                        let e1 = document.getElementById(`f4-e1-${i}`);
+                        let s2 = document.getElementById(`f4-s2-${i}`);
+                        let e2 = document.getElementById(`f4-e2-${i}`);
+                        if (s1 && r.s1 !== undefined) s1.value = r.s1;
+                        if (e1 && r.e1 !== undefined) e1.value = r.e1;
+                        if (s2 && r.s2 !== undefined) s2.value = r.s2;
+                        if (e2 && r.e2 !== undefined) e2.value = r.e2;
+                    }
                 }
             }
 
-            if (data.financials) {
-                for (const [id, val] of Object.entries(data.financials)) {
-                    const el = document.getElementById(id);
-                    if (el) el.value = val;
-                }
-            }
-
-            if (data.inputs) {
-                for (const [id, val] of Object.entries(data.inputs)) {
-                    const el = document.getElementById(id);
-                    if (el) el.value = val;
-                }
-            }
-
-            applyLockStateToElements();
             calculateTotals();
         }
 
-        // LocalStorageへの保存（履歴配列管理）
-        const LS_CURRENT_KEY = 'machida_sjc_current_report';
-        const LS_HISTORY_KEYS_LIST = 'machida_sjc_report_history_keys';
-
-        function saveToLocalStorage(notify = false) {
-            const data = collectFormData();
-            const contractNo = data.contractNo || 'default';
-            const month = data.month || '1';
-            const uniqueKey = `report_${contractNo}_${data.year}_${month}_${Date.now()}`;
-
-            localStorage.setItem(LS_CURRENT_KEY, JSON.stringify(data));
-
-            // 履歴管理キーの更新
-            let historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
-            // 最新を保持しつつ重複や古すぎるものを調整 (最大20件)
-            const baseKeyPrefix = `report_${contractNo}_${data.year}_${month}_`;
-            historyKeys = historyKeys.filter(k => !k.startsWith(baseKeyPrefix));
-            historyKeys.unshift(uniqueKey);
-            if (historyKeys.length > 20) historyKeys = historyKeys.slice(0, 20);
-
-            localStorage.setItem(LS_HISTORY_KEYS_LIST, JSON.stringify(historyKeys));
-            localStorage.setItem(uniqueKey, JSON.stringify(data));
-
-            if (notify) {
-                alert('ブラウザに一時保存しました。');
+        function saveToLocalStorage(isManual = false) {
+            const data = collectReportData();
+            localStorage.setItem('machida_sjc_report_data', JSON.stringify(data));
+            if (isManual) {
+                saveToHistory(data);
+                showMessage("データを一時保存しました。");
             }
         }
 
@@ -1358,228 +1531,116 @@
         }
 
         function loadFromLocalStorage() {
-            const raw = localStorage.getItem(LS_CURRENT_KEY);
-            if (raw) {
+            const saved = localStorage.getItem('machida_sjc_report_data');
+            if (saved) {
                 try {
-                    const data = JSON.parse(raw);
-                    restoreFormData(data);
-                } catch (e) {
-                    console.error('LocalStorage load error:', e);
+                    const data = JSON.parse(saved);
+                    applyReportData(data);
+                } catch(e) {
+                    console.error("ロードエラー", e);
                 }
             }
         }
 
         function clearLocalStorageAndReload() {
-            if (confirm('入力データをクリアしてリロードしますか？')) {
-                localStorage.removeItem(LS_CURRENT_KEY);
-                location.reload();
-            }
+            localStorage.removeItem('machida_sjc_report_data');
+            location.reload();
         }
 
-        function padZero(num, length = 2) {
-            return String(num).padStart(length, '0');
+        function toggleLockState() {
+            const isChecked = document.getElementById('is-locked-checkbox').checked;
+            const targets = document.querySelectorAll('.locked-target');
+            targets.forEach(el => {
+                el.readOnly = isChecked;
+                if (isChecked) {
+                    el.classList.add('bg-slate-50', 'text-slate-600');
+                } else {
+                    el.classList.remove('bg-slate-50', 'text-slate-600');
+                }
+            });
+            localStorage.setItem('machida_sjc_locked', isChecked);
         }
 
-        // JSONファイルのエクスポート
         function exportJSONFile() {
-            const data = collectFormData();
-            const contractNo = data.contractNo || '2601000';
-            const month = data.month || '9';
-            const now = new Date();
-            const year = now.getFullYear();
-            const mon = padZero(now.getMonth() + 1);
-            const day = padZero(now.getDate());
-            const hours = padZero(now.getHours());
-            const minutes = padZero(now.getMinutes());
-
-            const filename = `就業報告書${contractNo}_${month}月_${year}${mon}${day}${hours}${minutes}.json`;
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const data = collectReportData();
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
+            a.download = `就業報告書_${data.year}年${data.month}月_${data.memberName || '会員'}.json`;
             a.click();
-            document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        // JSONファイルのインポート（複数ファイル対応 & localID.json 自動検出）
-        async function importJSONFiles(event) {
+        function importJSONFiles(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
-
-            let loadedReportData = null;
-            let localIdFoundMessage = "localID.json は検知されませんでした。";
-            let memberNoOverride = null;
-            let memberNameOverride = null;
-
-            for (let file of files) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
                 try {
-                    const text = await file.text();
-                    const json = JSON.parse(text);
-
-                    if (file.name === 'localID.json' || json.memberNo !== undefined && json.memberName !== undefined && json.format === undefined) {
-                        // localID.json の特徴を持つファイル
-                        memberNoOverride = json.memberNo;
-                        memberNameOverride = json.memberName;
-                        localIdFoundMessage = "localID.json を正常に読み込み、会員情報を上書きしました！";
-                    } else {
-                        // 就業報告書データ本体とみなす
-                        loadedReportData = json;
-                    }
-                } catch (e) {
-                    console.error('JSON parse error:', e);
+                    const data = JSON.parse(e.target.result);
+                    applyReportData(data);
+                    showMessage("ファイルを正常に読み込みました。");
+                } catch(err) {
+                    showMessage("JSONファイルの読み込みに失敗しました。");
                 }
-            }
-
-            if (!loadedReportData) {
-                // もし単一の localID.json のみが読み込まれた場合などは現在のフォームに適用
-                if (memberNoOverride && memberNameOverride) {
-                    document.getElementById('member-no').value = memberNoOverride;
-                    document.getElementById('member-name').value = memberNameOverride;
-                    alert(`結果: ${localIdFoundMessage}`);
-                    triggerAutoSave();
-                    event.target.value = '';
-                    return;
-                }
-                alert('有効な就業報告書のJSONデータが見つかりませんでした。');
-                event.target.value = '';
-                return;
-            }
-
-            // 会員情報の上書き適用
-            if (memberNoOverride) loadedReportData.memberNo = memberNoOverride;
-            if (memberNameOverride) loadedReportData.memberName = memberNameOverride;
-
-            restoreFormData(loadedReportData);
-            alert(`JSONファイルのインポートに成功しました。\n結果: ${localIdFoundMessage}`);
-            event.target.value = '';
-            triggerAutoSave();
+            };
+            reader.readAsText(files[0]);
         }
 
-        // PDF保存 (html2pdf.js)
         function saveAsPDF() {
-            const element = document.getElementById('report-print-area'); // ※もしHTML側に id="report-print-area" を追加していない場合は document.querySelector('.print-container') 
-            const contractNo = document.getElementById('contract-no').value || '2601000';
-            const memberNo = document.getElementById('member-no').value.trim();
-            const memberName = document.getElementById('member-name').value.trim();
-            if (!memberNo || !memberName) {
-                alert('PDF保存の前に「会員番号」と「会員氏名」を入力してください。');
-                return;
-            }
-            const month = document.getElementById('report-month').value || '9';
-
-            // 1. 中身が空のinput/textareaからplaceholderを一時的に退避・削除する
-            const inputs = element.querySelectorAll('input, textarea');
-            const placeholders = [];
-            inputs.forEach((input, index) => {
-                placeholders[index] = input.getAttribute('placeholder');
-                if (!input.value && placeholders[index]) {
-                    input.setAttribute('placeholder', '');
-                }
-            });
-
+            const element = document.getElementById('report-print-area');
             const opt = {
                 margin:       [4, 4, 4, 4],
-                filename:     `就業報告書${contractNo}_${month}月(${memberNo}).pdf`,
+                filename:     `就業報告書_${document.getElementById('report-year').value}年${document.getElementById('report-month').value}月.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-
-            // 2. PDF化を実行し、完了後（または失敗時）にplaceholderを元に戻す
-            html2pdf().set(opt).from(element).save().then(() => {
-                inputs.forEach((input, index) => {
-                    if (placeholders[index]) {
-                        input.setAttribute('placeholder', placeholders[index]);
-                    }
-                });
-            }).catch((err) => {
-                console.error('PDF save error:', err);
-                inputs.forEach((input, index) => {
-                    if (placeholders[index]) {
-                        input.setAttribute('placeholder', placeholders[index]);
-                    }
-                });
-            });
+            html2pdf().from(element).set(opt).save();
         }
 
-        // メール送信 (mailto:)
         function sendEmailReport() {
-            const memberNo = document.getElementById('member-no').value.trim();
-            const memberName = document.getElementById('member-name').value.trim();
-            if (!memberNo || !memberName) {
-                alert('メール送信の前に「会員番号」と「会員氏名」を入力してください。');
-                return;
-            }
-
             const year = document.getElementById('report-year').value;
             const month = document.getElementById('report-month').value;
-            const format = document.getElementById('report-format').value;
-            const contractNo = document.getElementById('contract-no').value;
-            const grandTotal = document.getElementById('grand-total-amount').value || '0';
-            const grandEval = document.getElementById('grand-total-eval').value || '0';
-
-            const to = 'houkoku@machida-sjc.or.jp';
-            const sender = `${memberNo} ${memberName}`;
-            const subject = `【就業報告書】 ${year}年${month}月分 (${sender})`;
-
-            const body = 
-`公益社団法人 町田市シルバー人材センター 宛
-
-以下の通り、就業報告書の内容を送信いたします。
-
-----------------------------------
-■ 会員情報: ${sender}
-■ 対象年月: ${year}年 ${month}月分
-■ 契約番号: ${contractNo}
-■ 様式番号: 様式${format}
-■ 実績合計: ${grandEval}
-■ 請求合計: ${grandTotal} 円
-----------------------------------
-
-※保存したPDFファイルを添付してから送信してください。`;
-
-            const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.location.href = mailtoUrl;
+            const name = document.getElementById('member-name').value || '';
+            const title = encodeURIComponent(`就業報告書提出 (${year}年${month}月) ${name}`);
+            const body = encodeURIComponent(`町田市シルバー人材センターご中\n\n${year}年${month}分の就業報告書を送付いたします。\n会員氏名: ${name}\n\nよろしくお願いいたします。`);
+            window.location.href = `mailto:houkoku@machida-sjc.or.jp?subject=${title}&body=${body}`;
         }
 
-        // 提出履歴・管理モーダル
-        function openHistoryModal() {
-            const container = document.getElementById('history-list-container');
-            container.innerHTML = '';
+        function saveToHistory(data) {
+            let history = JSON.parse(localStorage.getItem('machida_sjc_history') || '[]');
+            history.unshift({
+                date: new Date().toLocaleString(),
+                summary: `${data.year}年${data.month}月分 (${data.memberName || '氏名未入力'})`,
+                data: data
+            });
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('machida_sjc_history', JSON.stringify(history));
+        }
 
-            const historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
-            if (historyKeys.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">保存された履歴はありません。</p>';
+        function openHistoryModal() {
+            const listEl = document.getElementById('history-list');
+            listEl.innerHTML = '';
+            let history = JSON.parse(localStorage.getItem('machida_sjc_history') || '[]');
+            if (history.length === 0) {
+                listEl.innerHTML = '<div class="text-gray-500 text-center py-4">保存された履歴はありません。</div>';
             } else {
-                historyKeys.forEach(key => {
-                    const rawData = localStorage.getItem(key);
-                    if (!rawData) return;
-                    try {
-                        const data = JSON.parse(rawData);
-                        const div = document.createElement('div');
-                        div.className = 'flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 text-xs';
-                        div.innerHTML = `
-                            <div>
-                                <span class="font-bold text-slate-800">${data.year}年${data.month}月分</span> 
-                                <span class="text-slate-600 ml-2">契約番号: ${data.contractNo || '未設定'}</span>
-                                <span class="text-slate-500 ml-2">(${data.memberName || '名前なし'})</span>
-                            </div>
-                            <div class="space-x-2">
-                                <button onclick="loadHistoryItem('${key}')" class="bg-blue-600 text-white px-2.5 py-1 rounded hover:bg-blue-700">呼出</button>
-                                <button onclick="deleteHistoryItem('${key}')" class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded hover:bg-rose-200">削除</button>
-                            </div>
-                        `;
-                        container.appendChild(div);
-                    } catch (e) {
-                        console.error(e);
-                    }
+                history.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center p-2 bg-slate-50 rounded border border-slate-200';
+                    div.innerHTML = `
+                        <div>
+                            <div class="font-bold">${item.summary}</div>
+                            <div class="text-gray-500 text-[10px]">${item.date}</div>
+                        </div>
+                        <button onclick="restoreHistoryItem(${index})" class="bg-blue-600 text-white px-2 py-1 rounded text-[11px]">復元</button>
+                    `;
+                    listEl.appendChild(div);
                 });
             }
-
             document.getElementById('history-modal').classList.remove('hidden');
         }
 
@@ -1587,286 +1648,13 @@
             document.getElementById('history-modal').classList.add('hidden');
         }
 
-        function loadHistoryItem(key) {
-            const raw = localStorage.getItem(key);
-            if (raw) {
-                const data = JSON.parse(raw);
-                restoreFormData(data);
-                localStorage.setItem(LS_CURRENT_KEY, raw);
-                alert('選択した報告書データを読み込みました。');
+        function restoreHistoryItem(index) {
+            let history = JSON.parse(localStorage.getItem('machida_sjc_history') || '[]');
+            if (history[index]) {
+                applyReportData(history[index].data);
                 closeHistoryModal();
+                showMessage("履歴からデータを復元しました。");
             }
-        }
-
-        function deleteHistoryItem(key) {
-            if (confirm('この履歴データを削除しますか？')) {
-                localStorage.removeItem(key);
-                let historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
-                historyKeys = historyKeys.filter(k => k !== key);
-                localStorage.setItem(LS_HISTORY_KEYS_LIST, JSON.stringify(historyKeys));
-                openHistoryModal();
-            }
-        }
-
-        // ==========================================
-        // 音声入力機能 (Web Speech API) 3モード実装
-        // ==========================================
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                console.warn('Web Speech API is not supported in this browser.');
-                return;
-            }
-
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ja-JP';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-
-            recognition.onstart = () => {
-                isListening = true;
-                document.getElementById('voice-status').classList.remove('hidden');
-                document.getElementById('voice-btn').classList.replace('bg-emerald-600', 'bg-rose-600');
-                document.getElementById('voice-btn-text').textContent = '音声認識中...';
-            };
-
-            recognition.onend = () => {
-                isListening = false;
-                document.getElementById('voice-status').classList.add('hidden');
-                document.getElementById('voice-btn').classList.replace('bg-rose-600', 'bg-emerald-600');
-                document.getElementById('voice-btn-text').textContent = '音声入力';
-            };
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                processVoiceCommand(transcript);
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                isListening = false;
-                document.getElementById('voice-status').classList.add('hidden');
-                document.getElementById('voice-btn').classList.replace('bg-rose-600', 'bg-emerald-600');
-                document.getElementById('voice-btn-text').textContent = '音声入力';
-            };
-        }
-
-        function toggleVoiceInput() {
-            if (!recognition) {
-                alert('お使いのブラウザは音声認識に対応していません。Google Chrome等をご利用ください。');
-                return;
-            }
-            if (isListening) {
-                recognition.stop();
-            } else {
-                focusedInputBeforeVoice = document.activeElement;
-                try {
-                    recognition.start();
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        }
-
-        // 音声解析ロジック（モードA / モードB / モードC）
-        function processVoiceCommand(text) {
-            console.log('音声認識結果:', text);
-
-            // モードA判定：特定の「開始時間」または「終了時間」のinputにカーソルがある場合
-            const activeEl = focusedInputBeforeVoice;
-            const isTimeInput = activeEl && activeEl.tagName === 'INPUT' && (
-                activeEl.id.includes('start') || activeEl.id.includes('end') || activeEl.id.includes('s1') || activeEl.id.includes('e1') || activeEl.id.includes('s2') || activeEl.id.includes('e2')
-            );
-
-            if (isTimeInput) {
-                const parsedTime = parseSpokenTime(text);
-                if (parsedTime) {
-                    activeEl.value = parsedTime;
-                    activeEl.dispatchEvent(new Event('input'));
-                    activeEl.dispatchEvent(new Event('blur'));
-                    triggerAutoSave();
-                    return;
-                }
-            }
-
-            // モードB判定：日付指定一括入力（例：「15日 9時 17時」「15日のデータ消して」など）
-            const dayMatch = text.match(/(\d{1,2})日/);
-            if (dayMatch) {
-                const dayNum = parseInt(dayMatch[1], 10);
-                if (dayNum >= 1 && dayNum <= 31) {
-                    // 消去コマンドのチェック
-                    if (text.includes('消す') || text.includes('クリア') || text.includes('削除')) {
-                        clearDayData(dayNum);
-                        alert(`${dayNum}日のデータをクリアしました。`);
-                        triggerAutoSave();
-                        return;
-                    }
-
-                    // 時間の抽出
-                    const times = extractAllTimes(text);
-                    if (times.length >= 2) {
-                        setDayTimeData(dayNum, times[0], times[1]);
-                        alert(`${dayNum}日に 開始:${times[0]} 終了:${times[1]} を設定しました。`);
-                        triggerAutoSave();
-                        return;
-                    } else if (times.length === 1) {
-                        setDayTimeData(dayNum, times[0], null);
-                        alert(`${dayNum}日に 開始:${times[0]} を設定しました。`);
-                        triggerAutoSave();
-                        return;
-                    }
-                }
-            }
-
-            // モードC判定：作業内容追記（日付が含まれない場合など）
-            const memoArea = document.getElementById('work-content-memo');
-            if (memoArea) {
-                const currentVal = memoArea.value;
-                memoArea.value = currentVal ? `${currentVal}\n${text}` : text;
-                memoArea.dispatchEvent(new Event('input'));
-                alert(`作業内容欄に追記しました: "${text}"`);
-                triggerAutoSave();
-            }
-        }
-
-        // 音声発話テキストから時刻を解析（モードAのルール対応）
-        function parseSpokenTime(text) {
-            // 例: "9時", "午後3時半", "正午", "15時30分"
-            if (text.includes('正午')) return '12:00';
-
-            let hours = null;
-            let minutes = 0;
-
-            const hMatch = text.match(/(\d{1,2})時/);
-            if (hMatch) {
-                hours = parseInt(hMatch[1], 10);
-            } else {
-                // 数字のみの場合
-                const numMatch = text.match(/(\d{1,4})/);
-                if (numMatch && text.length <= 4) {
-                    const val = numMatch[1];
-                    if (val.length <= 2) hours = parseInt(val, 10);
-                    else if (val.length === 3) {
-                        hours = parseInt(val.substring(0, 1), 10);
-                        minutes = parseInt(val.substring(1), 10);
-                    } else if (val.length === 4) {
-                        hours = parseInt(val.substring(0, 2), 10);
-                        minutes = parseInt(val.substring(2), 10);
-                    }
-                }
-            }
-
-            if (hours === null) return null;
-
-            // 「半」の処理
-            if (text.includes('半')) {
-                minutes = 30;
-            } else {
-                const mMatch = text.match(/(\d{1,2})分/);
-                if (mMatch) minutes = parseInt(mMatch[1], 10);
-            }
-
-            // 「午後」「夕方」「夜」のキーワードがあれば+12時間
-            let isPM = text.includes('午後') || text.includes('夕方') || text.includes('夜') || text.includes('晩');
-            if (isPM && hours < 12) {
-                hours += 12;
-            }
-
-            // 1時台から6時台まで（かつ午前と明示されていない場合）は午後（+12時間）として処理するルール
-            if (!text.includes('午前') && hours >= 1 && hours <= 6) {
-                hours += 12;
-            }
-
-            if (hours > 23) hours = 23;
-            if (minutes > 59) minutes = 59;
-
-            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-        }
-
-        // テキスト内から複数の時刻表現を抽出するヘルパー
-        function extractAllTimes(text) {
-            // 単純な「XX時YY分」や「XX時」のパターンを複数抽出
-            const matches = text.matchAll(/((?:午後|午前)?\d{1,2}時(?:半|\d{1,2}分)?|\d{1,4})/g);
-            const results = [];
-            for (const m of matches) {
-                const parsed = parseSpokenTime(m[0]);
-                if (parsed) results.push(parsed);
-            }
-            return results;
-        }
-
-        function setDayTimeData(day, startTime, endTime) {
-            const format = parseInt(document.getElementById('report-format').value);
-            if (format === 3) {
-                const startEl = document.getElementById(`f3-start-${day}`);
-                const endEl = document.getElementById(`f3-end-${day}`);
-                if (startEl && startTime) {
-                    startEl.value = startTime;
-                    startEl.dispatchEvent(new Event('input'));
-                }
-                if (endEl && endTime) {
-                    endEl.value = endTime;
-                    endEl.dispatchEvent(new Event('input'));
-                }
-            } else if (format === 4) {
-                const s1El = document.getElementById(`f4-s1-${day}`);
-                if (s1El && startTime) {
-                    s1El.value = startTime;
-                    s1El.dispatchEvent(new Event('input'));
-                }
-                const e1El = document.getElementById(`f4-e1-${day}`);
-                if (e1El && endTime) {
-                    e1El.value = endTime;
-                    e1El.dispatchEvent(new Event('input'));
-                }
-            } else if (format === 1) {
-                const textEl = document.getElementById(`f1-text-${day}`);
-                if (textEl) {
-                    textEl.value = `開始 ${startTime || ''} 終了 ${endTime || ''}`;
-                    textEl.dispatchEvent(new Event('input'));
-                }
-            }
-            calculateTotals();
-        }
-
-        function clearDayData(day) {
-            const format = parseInt(document.getElementById('report-format').value);
-            if (format === 3) {
-                const startEl = document.getElementById(`f3-start-${day}`);
-                const endEl = document.getElementById(`f3-end-${day}`);
-                if (startEl) { startEl.value = ''; startEl.dispatchEvent(new Event('input')); }
-                if (endEl) { endEl.value = ''; endEl.dispatchEvent(new Event('input')); }
-            } else if (format === 4) {
-                ['s1', 'e1', 's2', 'e2'].forEach(k => {
-                    const el = document.getElementById(`f4-${k}-${day}`);
-                    if (el) { el.value = ''; el.dispatchEvent(new Event('input')); }
-                });
-            } else if (format === 1) {
-                const textEl = document.getElementById(`f1-text-${day}`);
-                const evalEl = document.getElementById(`f1-eval-${day}`);
-                if (textEl) { textEl.value = ''; textEl.dispatchEvent(new Event('input')); }
-                if (evalEl) { evalEl.value = ''; evalEl.dispatchEvent(new Event('input')); }
-            } else if (format === 2) {
-                const n1 = document.getElementById(`f2-n1-${day}`);
-                const n2 = document.getElementById(`f2-n2-${day}`);
-                if (n1) { n1.value = ''; n1.dispatchEvent(new Event('input')); }
-                if (n2) { n2.value = ''; n2.dispatchEvent(new Event('input')); }
-            }
-            calculateTotals();
-        }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-            // 'service-worker.js' を登録 (index.htmlからの相対パス)
-            navigator.serviceWorker.register('service-worker.js')
-              .then((registration) => {
-                console.log('Service Worker registered successfully:', registration.scope);
-              })
-              .catch((error) => {
-                console.log('Service Worker registration failed:', error);
-              });
-          });
         }
     </script>
 </body>
