@@ -976,8 +976,8 @@
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
-                    <th style="width: 16%;">出勤</th>
-                    <th style="width: 16%;">退勤</th>
+                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="開始時間" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="終了時間" readonly style="background:transparent;" tabindex="-1"></th>
                     <th class="col-eval">
                         <select id="f3-eval-type-1" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat3EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
@@ -986,8 +986,8 @@
                     </th>
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
-                    <th style="width: 16%;">出勤</th>
-                    <th style="width: 16%;">退勤</th>
+                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="開始時間" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 15%;"><input type="text" class="text-center font-bold" value="終了時間" readonly style="background:transparent;" tabindex="-1"></th>
                     <th class="col-eval">
                         <select id="f3-eval-type-2" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat3EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
@@ -995,13 +995,22 @@
                         </select>
                     </th>
                 `;
+                const s1 = document.getElementById('f3-eval-type-1');
+                const s2 = document.getElementById('f3-eval-type-2');
+                ensureOptionExists(s1, currentEvalType);
+                ensureOptionExists(s2, currentEvalType);
+                if (s1) s1.value = currentEvalType;
+                if (s2) s2.value = currentEvalType;
             } else if (format === 4) {
                 const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
                 headerRow.innerHTML = `
                     <th class="col-day" rowspan="2">日</th>
                     <th class="col-wday" rowspan="2">曜日</th>
-                    <th colspan="2" style="width: 32%;">午前</th>
-                    <th class="col-eval" rowspan="2">
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始1" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了1" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始2" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了2" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th class="col-eval">
                         <select id="f4-eval-type-1" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat4EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
@@ -1009,97 +1018,161 @@
                     </th>
                     <th class="col-day" rowspan="2">日</th>
                     <th class="col-wday" rowspan="2">曜日</th>
-                    <th colspan="2" style="width: 32%;">午前</th>
-                    <th class="col-eval" rowspan="2">
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始1" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了1" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="開始2" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th style="width: 7.5%;"><input type="text" class="text-center font-bold" value="終了2" readonly style="background:transparent;" tabindex="-1"></th>
+                    <th class="col-eval">
                         <select id="f4-eval-type-2" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat4EvalTypeChange(this)">
                             <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                         </select>
                     </th>
                 `;
+                const s1 = document.getElementById('f4-eval-type-1');
+                const s2 = document.getElementById('f4-eval-type-2');
+                ensureOptionExists(s1, currentEvalType);
+                ensureOptionExists(s2, currentEvalType);
+                if (s1) s1.value = currentEvalType;
+                if (s2) s2.value = currentEvalType;
             }
 
-            for (let i = 1; i <= 16; i++) {
-                const day1 = i;
-                const day2 = i + 16 <= 31 ? i + 16 : null;
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            for (let i = 1; i <= 15; i++) {
+                const i2 = i + 16;
+                const d1 = i;
+                const isValid1 = d1 <= daysInMonth;
+                const w1 = isValid1 ? weekdays[new Date(year, month - 1, d1).getDay()] : '';
+
+                const d2 = i2 <= daysInMonth ? i2 : null;
+                const isValid2 = d2 !== null;
+                const w2 = isValid2 ? weekdays[new Date(year, month - 1, d2).getDay()] : '';
 
                 const tr = document.createElement('tr');
-                tr.innerHTML = generateRowHTML(format, day1, year, month) + (day2 ? generateRowHTML(format, day2, year, month) : `
-                    <td class="col-day bg-slate-50"></td>
-                    <td class="col-wday bg-slate-50"></td>
-                    ${format === 1 ? '<td colspan="2"></td><td class="col-eval"></td>' :
-                      format === 2 ? '<td colspan="2"></td><td class="col-eval"></td>' :
-                      format === 3 ? '<td colspan="2"></td><td class="col-eval"></td>' :
-                      '<td colspan="3"></td><td class="col-eval"></td>'}
-                `);
+                if (format === 1) {
+                    tr.innerHTML = `
+                        <td class="text-center font-bold bg-slate-50 col-day">${isValid1 ? d1 : ''}</td>
+                        <td class="text-center col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f1-text-${d1}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f1-eval-${d1}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="text-center font-bold bg-slate-50 col-day">${isValid2 ? d2 : ''}</td>
+                        <td class="text-center col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f1-text-${d2}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f1-eval-${d2}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                    `;
+                } else if (format === 2) {
+                    tr.innerHTML = `
+                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
+                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-n1-${d1}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-n2-${d1}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f2-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
+                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
+                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-n1-${d2}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-n2-${d2}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f2-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
+                    `;
+                } else if (format === 3) {
+                    tr.innerHTML = `
+                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
+                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-start-${d1}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-end-${d1}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f3-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
+                        <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
+                        <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-start-${d2}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-end-${d2}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f3-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
+                    `;
+                } else if (format === 4) {
+                    tr.innerHTML = `
+                        <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1 ? d1 : ''}</td>
+                        <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-s1-${d1}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-e1-${d1}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-s2-${d1}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-e2-${d1}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f4-eval-${d1}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
+                        <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid2 ? d2 : ''}</td>
+                        <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-s1-${d2}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-e1-${d2}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-s2-${d2}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-e2-${d2}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f4-eval-${d2}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
+                    `;
+                }
                 tbody.appendChild(tr);
             }
 
-            // 合計行
-            const totalTr = document.createElement('tr');
-            totalTr.className = 'bg-slate-100 font-bold text-center';
-            totalTr.innerHTML = `
-                <td colspan="2">合　計</td>
-                <td colspan="${format === 4 ? 3 : (format === 3 ? 2 : (format === 2 ? 2 : 1))}"></td>
-                <td><input type="text" id="grand-total-eval" class="text-center font-bold text-xs" readonly placeholder="0"></td>
-                <td colspan="2"></td>
-                <td colspan="${format === 4 ? 3 : (format === 3 ? 2 : (format === 2 ? 2 : 1))}"></td>
-                <td></td>
-            `;
-            tbody.appendChild(totalTr);
-
-            calculateTotals();
+            const tr16 = document.createElement('tr');
+            tbody.appendChild(tr16);
+            buildTotalRow(format, tr16, year, month);
+            applyLockStateToElements(); // ロック状態の適用
         }
 
-        function generateRowHTML(format, day, year, month) {
-            const dateObj = new Date(year, month - 1, day);
-            const isValidDate = dateObj.getMonth() === month - 1;
-            const wday = isValidDate ? weekdays[dateObj.getDay()] : '';
-            const wdayColor = dateObj.getDay() === 0 ? 'text-rose-600 font-bold' : (dateObj.getDay() === 6 ? 'text-blue-600 font-bold' : '');
-
-            if (!isValidDate) {
-                return `
-                    <td class="col-day text-center text-gray-400"></td>
-                    <td class="col-wday text-center text-gray-400"></td>
-                    ${format === 1 ? '<td></td><td class="col-eval"></td>' :
-                      format === 2 ? '<td></td><td></td><td class="col-eval"></td>' :
-                      format === 3 ? '<td></td><td></td><td class="col-eval"></td>' :
-                      '<td colspan="2"></td><td class="col-eval"></td>'}
-                `;
-            }
+        function buildTotalRow(format, tr16, year, month) {
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const d1_16 = 16;
+            const isValid1_16 = d1_16 <= daysInMonth;
+            const w1_16 = isValid1_16 ? weekdays[new Date(year, month - 1, d1_16).getDay()] : '';
 
             if (format === 1) {
-                return `
-                    <td class="col-day text-center">${day}</td>
-                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
-                    <td><input type="text" id="f1-text-${day}" class="text-xs" oninput="calculateTotals(); triggerAutoSave()" placeholder=""></td>
-                    <td class="col-eval"><input type="text" id="f1-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                tr16.innerHTML = `
+                    <td class="text-center font-bold bg-slate-50 col-day">${isValid1_16 ? d1_16 : ''}</td>
+                    <td class="text-center col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f1-text-${d1_16}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td class="col-eval"><input type="text" id="f1-eval-${d1_16}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td colspan="2" class="text-center font-bold bg-slate-100">合計</td>
+                    <td><input type="text" readonly style="background:transparent;"></td>
+                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
                 `;
             } else if (format === 2) {
-                return `
-                    <td class="col-day text-center">${day}</td>
-                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
-                    <td><input type="text" id="f2-n1-${day}" class="text-right text-xs entry-f2-c1" oninput="calculateTotals(); triggerAutoSave()" placeholder=""></td>
-                    <td><input type="text" id="f2-n2-${day}" class="text-right text-xs entry-f2-c2" oninput="calculateTotals(); triggerAutoSave()" placeholder=""></td>
-                    <td class="col-eval"><input type="text" id="f2-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                tr16.innerHTML = `
+                    <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
+                    <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f2-n1-${d1_16}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f2-n2-${d1_16}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td class="col-eval"><input type="text" id="f2-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
+                    <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
+                    <td><input type="text" id="f2-col-total-1" class="text-right font-bold bg-slate-50" readonly placeholder=""></td>
+                    <td><input type="text" id="f2-col-total-2" class="text-right font-bold bg-slate-50" readonly placeholder=""></td>
+                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
                 `;
             } else if (format === 3) {
-                return `
-                    <td class="col-day text-center">${day}</td>
-                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
-                    <td><input type="text" id="f3-start-${day}" class="text-center text-xs entry-f3-c1" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
-                    <td><input type="text" id="f3-end-${day}" class="text-center text-xs entry-f3-c2" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
-                    <td class="col-eval"><input type="text" id="f3-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                tr16.innerHTML = `
+                    <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
+                    <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-start-${d1_16}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-end-${d1_16}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td class="col-eval"><input type="text" id="f3-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
+                    <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
+                    <td><input type="text" id="f3-col-total-1" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                    <td><input type="text" id="f3-col-total-2" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
                 `;
             } else if (format === 4) {
-                return `
-                    <td class="col-day text-center">${day}</td>
-                    <td class="col-wday text-center ${wdayColor}">${wday}</td>
-                    <td><input type="text" id="f4-s1-${day}" class="text-center text-xs entry-f4-c1" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
-                    <td><input type="text" id="f4-e1-${day}" class="text-center text-xs entry-f4-c2" onblur="handleTimeBlur(this)" oninput="triggerAutoSave()" placeholder=""></td>
-                    <td class="col-eval" rowspan="1"><input type="text" id="f4-eval-${day}" class="text-center text-xs eval-input" readonly placeholder=""></td>
+                tr16.innerHTML = `
+                    <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1_16 ? d1_16 : ''}</td>
+                    <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-s1-${d1_16}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-e1-${d1_16}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-s2-${d1_16}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-e2-${d1_16}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td class="col-eval"><input type="text" id="f4-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
+                    <td colspan="2" class="text-center font-bold bg-slate-100 text-[10px]">合計</td>
+                    <td><input type="text" id="f4-col-total-1" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                    <td><input type="text" id="f4-col-total-2" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                    <td><input type="text" id="f4-col-total-3" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                    <td><input type="text" id="f4-col-total-4" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                    <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
                 `;
             }
+
+            calculateTotals();
         }
 
         // ==========================================
