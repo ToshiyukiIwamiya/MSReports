@@ -1797,7 +1797,8 @@
                 }
                 if (id.includes('text')) {
                     let textInput = document.getElementById(id);
-                    textInput.value = transcript;
+                    if (textInput) {
+                        textInput.value = (textInput.value ? textInput.value + " " : "") + transcript;
                     calculateTotals();
                     triggerAutoSave();
                     return;
