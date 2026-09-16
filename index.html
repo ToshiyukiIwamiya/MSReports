@@ -698,8 +698,8 @@
                 }
             } else if (format === 2) {
                 for (let i = 1; i <= 31; i++) {
-                    const rowN1 = document.getElementById(`f2-n1-${i}`);
-                    const rowN2 = document.getElementById(`f2-n2-${i}`);
+                    const rowN1 = document.getElementById(`f2-num1-${i}`);
+                    const rowN2 = document.getElementById(`f2-num2-${i}`);
                     const evalField = document.getElementById(`f2-eval-${i}`);
 
                     if (rowN1 && rowN2 && evalField) {
@@ -1073,13 +1073,13 @@
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n1-${d1}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n2-${d1}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num1-${d1}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num2-${d1}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f2-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n1-${d2}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-n2-${d2}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num1-${d2}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num2-${d2}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f2-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
                     `;
                 } else if (format === 3) {
@@ -1142,8 +1142,8 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f2-n1-${d1_16}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f2-n2-${d1_16}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f2-num1-${d1_16}" class="text-right entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f2-num2-${d1_16}" class="text-right entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td class="col-eval"><input type="text" id="f2-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
                     <td><input type="text" id="f2-col-total-1" class="text-right font-bold bg-slate-50" readonly placeholder=""></td>
@@ -1657,6 +1657,33 @@
             return null;
         }
 
+        // 音声認識されたテキストから数値群を正確に抽出してペアリングするヘルパー
+        function extractNumbersFromTranscript(text) {
+            let t = text;
+            // 漢数字の簡易置換
+            t = t.replace(/千/g, '1').replace(/百/g, '1').replace(/十/g, '1')
+                 .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
+                 .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
+                 .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9');
+
+            let regex = /\s*(\d{1,4})\s/g;
+            let match;
+            let results = [];
+
+            while ((match = regex.exec(t)) !== null) {
+                let n1 = parseInt(match[1], 10);
+
+                results.push({
+                    index: match.index,
+                    num: n1
+                });
+            }
+            // 出現順（文字列内のインデックス順）にソートする
+            results.sort((a, b) => a.index - b.index);
+
+            return results.map(r => r.num);
+        }
+
         // 音声認識されたテキストから時刻群を正確に抽出してペアリングするヘルパー
         function extractTimesFromTranscript(text) {
             let t = text;
@@ -1719,6 +1746,26 @@
                 }
             }
 
+            // --- 特殊要件（様式2対応）：「16日9と17時」のように話した場合の一括入力 ---
+            if (format === 2) {
+                let dayVal = parseDayWord(transcript);
+                if (dayVal) {
+                    let extractedNumbers = extractNumbersFromTranscript(transcript);
+
+                    if (dayVal >= 1 && dayVal <= 31 && extractedNumbers.length > 0) {
+                        let n1 = document.getElementById(`f2-num1-${dayVal}`);
+                        let n2 = document.getElementById(`f2-num2-${dayVal}`);
+                        
+                        if (n1 && extractedNumbers[0]) n1.value = extractedNumbers[0];
+                        if (n2 && extractedNumbers[1]) n2.value = extractedNumbers[1];
+
+                        calculateTotals();
+                        triggerAutoSave();
+                        return;
+                    }
+                }
+            }
+
             // --- 特殊要件（様式3対応）：「16日の9時から17時まで」のように話した場合の一括入力 ---
             if (format === 3) {
                 let dayVal = parseDayWord(transcript);
@@ -1745,6 +1792,25 @@
 
                 if (id === 'work-content-memo') {
                     activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
+                    triggerAutoSave();
+                    return;
+                }
+                if (id.includes('text')) {
+                    let textInput = document.getElementById(id);
+                    textInput.value = transcript;
+                    calculateTotals();
+                    triggerAutoSave();
+                    return;
+                }
+                if (id.includes('num')) {
+                    let extractedNumbers = extractNumbersFromTranscript(transcript);
+
+                    if (extractedNumbers.length > 0) {
+                        let numInput = document.getElementById(id);
+                        
+                        if (numInput && extractedNumbers[0]) numInput.value = extractedNumbers[0];
+                    }
+                    calculateTotals();
                     triggerAutoSave();
                     return;
                 }
@@ -1794,8 +1860,8 @@
                 let el = document.getElementById(`f1-text-${day}`);
                 if (el) el.value = '';
             } else if (format === 2) {
-                let e1 = document.getElementById(`f2-n1-${day}`);
-                let e2 = document.getElementById(`f2-n2-${day}`);
+                let e1 = document.getElementById(`f2-num1-${day}`);
+                let e2 = document.getElementById(`f2-num2-${day}`);
                 if (e1) e1.value = '';
                 if (e2) e2.value = '';
             } else if (format === 3) {
