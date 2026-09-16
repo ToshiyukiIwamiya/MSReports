@@ -132,8 +132,8 @@
         <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
             <!-- 1. チェックボックス：「会員用に摘要名と項目名をロックする」 -->
             <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer bg-slate-50 px-2 py-1.5 rounded border border-slate-300 select-none">
-                <input type="checkbox" id="is-locked-checkbox" onchange="()" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                <span>項目名ロック</span>toggleLockState
+                <input type="checkbox" id="is-locked-checkbox" onchange="toggleLockState()" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                <span>項目名ロック</span>
             </label>
         </div>
 
@@ -186,6 +186,7 @@
             </button>
         </div>
         <div id="voice-status" class="mt-1.5 text-xs text-emerald-700 font-medium hidden">🎤 音声認識中...話してください</div>
+        <div id="voice-transcript-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
     </div>
 
     <!-- 横幅が狭い端末でもレイアウトが潰れないスクロールラッパー -->
@@ -405,12 +406,25 @@
     </div>
     </div>
 
+    <!-- 提出履歴管理モーダル -->
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-5 m-4">
+            <div class="flex justify-between items-center border-b pb-3 mb-3">
+                <h3 class="text-base font-bold text-slate-800">提出・保存履歴管理</h3>
+                <button onclick="closeHistoryModal()" class="text-slate-500 hover:text-slate-700 font-bold text-sm">✕ 閉じる</button>
+            </div>
+            <div id="history-list-container" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- 履歴アイテムがここに動的に挿入されます -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
         let autoSaveTimer = null;
         let recognition = null;
         let isListening = false;
-        let focusedInputBeforeVoice = null;
+        let lastFocusedElement = null; // 最後にフォーカスされたinput/textarea要素を記録
 
         function initReport() {
             const yearSelect = document.getElementById('report-year');
@@ -437,6 +451,13 @@
                 if (m === currentMonth) opt.selected = true;
                 monthSelect.appendChild(opt);
             }
+
+            // フォーカス追跡リスナーの登録
+            document.addEventListener('focusin', (e) => {
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    lastFocusedElement = e.target;
+                }
+            });
 
             // ローカルストレージからの復元
             loadFromLocalStorage();
@@ -484,7 +505,6 @@
                 return { minutes: 12 * 60, formatted: '12:00' };
             }
 
-            // 音声解析で変換された文字列への対応
             let h = 0, m = 0;
             if (val.includes(':')) {
                 const parts = val.split(':');
@@ -754,28 +774,6 @@
                         }
                     }
                 }
-//
-//                for (let colIdx = 1; colIdx <= 2; colIdx++) {
-//                    let totalMinutes = 0;
-//                    let hasTime = false;
-//                    document.querySelectorAll(`.entry-f3-c${colIdx}`).forEach(input => {
-//                        const parsed = parseTimeToMinutes(input.value);
-//                        if (parsed) {
-//                            totalMinutes += parsed.minutes;
-//                            hasTime = true;
-//                        }
-//                    });
-//                    const totalField = document.getElementById(`f3-col-total-${colIdx}`);
-//                    if (totalField) {
-//                        if (hasTime) {
-//                            const th = Math.floor(totalMinutes / 60);
-//                            const tm = totalMinutes % 60;
-//                            totalField.value = `${th}:${tm.toString().padStart(2, '0')}`;
-//                        } else {
-//                            totalField.value = '';
-//                        }
-//                    }
-//                }
             } else if (format === 4) {
                 const evalTypeEl = document.getElementById('f4-eval-type-1');
                 const evalType = evalTypeEl ? evalTypeEl.value : '時間';
@@ -826,28 +824,6 @@
                         }
                     }
                 }
-//
-//                for (let colIdx = 1; colIdx <= 4; colIdx++) {
-//                    let totalMinutes = 0;
-//                    let hasTime = false;
-//                    document.querySelectorAll(`.entry-f4-c${colIdx}`).forEach(input => {
-//                        const parsed = parseTimeToMinutes(input.value);
-//                        if (parsed) {
-//                            totalMinutes += parsed.minutes;
-//                            hasTime = true;
-//                        }
-//                    });
-//                    const totalField = document.getElementById(`f4-col-total-${colIdx}`);
-//                    if (totalField) {
-//                        if (hasTime) {
-//                            const th = Math.floor(totalMinutes / 60);
-//                            const tm = totalMinutes % 60;
-//                            totalField.value = `${th}:${tm.toString().padStart(2, '0')}`;
-//                        } else {
-//                            totalField.value = '';
-//                        }
-//                    }
-//                }
             }
 
             const evalInputs = document.querySelectorAll('.eval-input');
@@ -1215,7 +1191,6 @@
 
         function applyLockStateToElements() {
             const isLocked = document.getElementById('is-locked-checkbox').checked;
-            // 表ヘッダーおよび配分金の単位・項目名入力欄（locked-targetクラス）
             const lockedTargets = document.querySelectorAll('.locked-target, #table-header-row input, #table-header-row select');
             lockedTargets.forEach(el => {
                 if (isLocked) {
@@ -1255,19 +1230,16 @@
                 inputs: {}
             };
 
-            // 項目名の保存
             for (let i = 1; i <= 7; i++) {
                 const el = document.getElementById(`item-name-${i}`);
                 if (el) data.itemNames[`item-name-${i}`] = el.value;
             }
 
-            // 金額系入力欄の保存
             ['p1-price', 'p2-price', 'p3-price', 'p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) data.financials[id] = el.value;
             });
 
-            // カレンダー表内の全input/select要素の保存
             const tableInputs = document.querySelectorAll('#report-table-el input, #report-table-el select');
             tableInputs.forEach(el => {
                 if (el.id) {
@@ -1286,7 +1258,6 @@
             if (data.year) document.getElementById('report-year').value = data.year;
             if (data.month) document.getElementById('report-month').value = data.month;
 
-            // 様式や年月を反映してカレンダーを再構築
             updateCalendar();
 
             if (data.isLocked !== undefined) {
@@ -1325,7 +1296,6 @@
             calculateTotals();
         }
 
-        // LocalStorageへの保存（履歴配列管理）
         const LS_CURRENT_KEY = 'machida_sjc_current_report';
         const LS_HISTORY_KEYS_LIST = 'machida_sjc_report_history_keys';
 
@@ -1337,9 +1307,7 @@
 
             localStorage.setItem(LS_CURRENT_KEY, JSON.stringify(data));
 
-            // 履歴管理キーの更新
             let historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
-            // 最新を保持しつつ重複や古すぎるものを調整 (最大20件)
             const baseKeyPrefix = `report_${contractNo}_${data.year}_${month}_`;
             historyKeys = historyKeys.filter(k => !k.startsWith(baseKeyPrefix));
             historyKeys.unshift(uniqueKey);
@@ -1380,7 +1348,6 @@
             return String(num).padStart(length, '0');
         }
 
-        // JSONファイルのエクスポート
         function exportJSONFile() {
             const data = collectFormData();
             const contractNo = data.contractNo || '2601000';
@@ -1405,7 +1372,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // JSONファイルのインポート（複数ファイル対応 & localID.json 自動検出）
         async function importJSONFiles(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -1421,12 +1387,10 @@
                     const json = JSON.parse(text);
 
                     if (file.name === 'localID.json' || json.memberNo !== undefined && json.memberName !== undefined && json.format === undefined) {
-                        // localID.json の特徴を持つファイル
                         memberNoOverride = json.memberNo;
                         memberNameOverride = json.memberName;
                         localIdFoundMessage = "localID.json を正常に読み込み、会員情報を上書きしました！";
                     } else {
-                        // 就業報告書データ本体とみなす
                         loadedReportData = json;
                     }
                 } catch (e) {
@@ -1435,7 +1399,6 @@
             }
 
             if (!loadedReportData) {
-                // もし単一の localID.json のみが読み込まれた場合などは現在のフォームに適用
                 if (memberNoOverride && memberNameOverride) {
                     document.getElementById('member-no').value = memberNoOverride;
                     document.getElementById('member-name').value = memberNameOverride;
@@ -1449,7 +1412,6 @@
                 return;
             }
 
-            // 会員情報の上書き適用
             if (memberNoOverride) loadedReportData.memberNo = memberNoOverride;
             if (memberNameOverride) loadedReportData.memberName = memberNameOverride;
 
@@ -1459,9 +1421,8 @@
             triggerAutoSave();
         }
 
-        // PDF保存 (html2pdf.js)
         function saveAsPDF() {
-            const element = document.getElementById('report-print-area'); // ※もしHTML側に id="report-print-area" を追加していない場合は document.querySelector('.print-container') 
+            const element = document.getElementById('report-print-area');
             const contractNo = document.getElementById('contract-no').value || '2601000';
             const memberNo = document.getElementById('member-no').value.trim();
             const memberName = document.getElementById('member-name').value.trim();
@@ -1471,7 +1432,6 @@
             }
             const month = document.getElementById('report-month').value || '9';
 
-            // 1. 中身が空のinput/textareaからplaceholderを一時的に退避・削除する
             const inputs = element.querySelectorAll('input, textarea');
             const placeholders = [];
             inputs.forEach((input, index) => {
@@ -1489,7 +1449,6 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 2. PDF化を実行し、完了後（または失敗時）にplaceholderを元に戻す
             html2pdf().set(opt).from(element).save().then(() => {
                 inputs.forEach((input, index) => {
                     if (placeholders[index]) {
@@ -1506,7 +1465,6 @@
             });
         }
 
-        // メール送信 (mailto:)
         function sendEmailReport() {
             const memberNo = document.getElementById('member-no').value.trim();
             const memberName = document.getElementById('member-name').value.trim();
@@ -1546,7 +1504,6 @@
             window.location.href = mailtoUrl;
         }
 
-        // 提出履歴・管理モーダル
         function openHistoryModal() {
             const container = document.getElementById('history-list-container');
             container.innerHTML = '';
@@ -1629,11 +1586,13 @@
                 document.getElementById('voice-btn').classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
                 document.getElementById('voice-btn').classList.add('bg-rose-600', 'hover:bg-rose-700');
                 document.getElementById('voice-status').classList.remove('hidden');
+                document.getElementById('voice-transcript-display').textContent = "";
             };
 
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
                 console.log("音声認識結果:", transcript);
+                document.getElementById('voice-transcript-display').textContent = `「${transcript}」`;
                 processVoiceCommand(transcript);
             };
 
@@ -1649,7 +1608,7 @@
 
         function toggleVoiceInput() {
             if (!recognition) {
-                showMessage("お使いのブラウザは音声入力に対応していません。");
+                alert("お使いのブラウザは音声入力に対応していません。");
                 return;
             }
             if (isListening) {
@@ -1671,48 +1630,6 @@
             document.getElementById('voice-status').classList.add('hidden');
         }
 
-        // 時間文字列・数値の変換ロジック
-        function parseSpokenTime(text) {
-            if (!text) return null;
-            let t = text.trim();
-
-            if (t.includes('正午')) return '12:00';
-
-            // 数字の抽出
-            // 例: "9時半" -> h=9, m=30
-            let has午後 = t.includes('午後') || t.includes('夕方') || t.includes('夜');
-            
-            // 漢数字を算用数字に置換する簡易ヘルパー
-            t = t.replace(/十/g, '1')
-                 .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
-                 .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
-                 .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9');
-
-            let hourMatch = t.match(/(\d{1,2})\s*時/);
-            let minMatch = t.match(/(\d{1,2})\s*分/);
-            let hasHan = t.includes('半');
-
-            if (!hourMatch) {
-                // "15:30" や "900" の形式
-                let directTime = parseTimeToMinutes(t);
-                return directTime ? directTime.formatted : null;
-            }
-
-            let h = parseInt(hourMatch[1], 10);
-            let m = minMatch ? parseInt(minMatch[1], 10) : (hasHan ? 30 : 0);
-
-            // ルール: 「午後」「夕方」「夜」があれば+12時間。また1時台〜6時台までは+12時間（午前指定がない限り午後とみなす日本的な入力サポート）
-            if (has午後) {
-                if (h < 12) h += 12;
-            } else if (h >= 1 && h <= 6) {
-                h += 12;
-            }
-
-            if (h >= 24) h = 24;
-
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        }
-
         // 和風の日の読み方を数字に変換
         function parseDayWord(text) {
             const map = {
@@ -1726,7 +1643,11 @@
                 'ようか': 8, '八日': 8,
                 'ここのか': 9, '九日': 9,
                 'とおか': 10, '十日': 10,
-                'はつか': 20, '二十日': 20
+                'じゅういちにち': 11, 'じゅうににち': 12, 'じゅうさんにち': 13, 'じゅうよっか': 14, 'じゅうごにち': 15,
+                'じゅうろくにち': 16, '十六日': 16,
+                'じゅうしちにち': 17, 'じゅうはちにち': 18, 'じゅうくにち': 19, 'はつか': 20, '二十日': 20,
+                'にじゅういちにち': 21, 'にじゅうににち': 22, 'にじゅうさんにち': 23, 'にじゅうよっか': 24, 'にじゅうごにち': 25,
+                'にじゅうろくにち': 26, 'にじゅうしちにち': 27, 'にじゅうはちにち': 28, 'にじゅうくにち': 29, 'さんじゅうにち': 30, 'さんじゅういちにち': 31
             };
             for (let key in map) {
                 if (text.includes(key)) return map[key];
@@ -1736,6 +1657,49 @@
             return null;
         }
 
+        // 音声認識されたテキストから時刻群を正確に抽出してペアリングするヘルパー
+        function extractTimesFromTranscript(text) {
+            let t = text;
+            // 漢数字の簡易置換
+            t = t.replace(/十/g, '1')
+                 .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
+                 .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
+                 .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9')
+                 .replace(/半/g, '30分');
+
+            // 「◯時◯分」や「◯時」のパターンを全て抽出する
+            // 例: "9時" と "17時" や "9時半" と "17時" など
+            let regex = /(午前|午後|夕方|夜)?\s*(\d{1,2})\s*時(\s*(\d{1,2})\s*分)?/g;
+            let match;
+            let results = [];
+
+            while ((match = regex.exec(t)) !== null) {
+                let ampm = match[1];
+                let h = parseInt(match[2], 10);
+                let m = match[4] ? parseInt(match[4], 10) : 0;
+
+                if (ampm && (ampm.includes('午後') || ampm.includes('夕方') || ampm.includes('夜'))) {
+                    if (h < 12) h += 12;
+                } else if (!ampm && h >= 1 && h <= 6) {
+                    // 午前指定がなく、1〜6時の場合は一般的な仕事時間に合わせて午後(+12)とする
+                    h += 12;
+                }
+
+                if (h > 23) h = 23;
+                if (m > 59) m = 59;
+
+                results.push({
+                    index: match.index,
+                    formatted: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+                });
+            }
+
+            // 出現順（文字列内のインデックス順）にソートする
+            results.sort((a, b) => a.index - b.index);
+
+            return results.map(r => r.formatted);
+        }
+
         // 賢い音声解析ロジックのメイン処理
         function processVoiceCommand(transcript) {
             const format = parseInt(document.getElementById('report-format').value);
@@ -1743,44 +1707,33 @@
 
             console.log("解析テキスト:", transcript, "現在の様式:", format, "フォーカス要素:", activeEl ? activeEl.id : "なし");
 
-            // --- 共通要件：特定の日のデータ消去コマンド（例：「15日のデータ消して」） ---
+            // --- 共通要件：特定の日のデータ消去コマンド（例：「16日のデータ消して」） ---
             if (transcript.includes('消す') || transcript.includes('クリア') || transcript.includes('削除')) {
                 let targetDay = parseDayWord(transcript);
                 if (targetDay && targetDay >= 1 && targetDay <= 31) {
                     clearDataForDay(format, targetDay);
                     calculateTotals();
                     triggerAutoSave();
-                    showMessage(`${targetDay}日のデータをクリアしました。`);
+                    alert(`${targetDay}日のデータをクリアしました。`);
                     return;
                 }
             }
 
-            // --- 特殊要件（様式3対応）：「15日 9時 17時」のように話した場合の一括入力 ---
+            // --- 特殊要件（様式3対応）：「16日の9時から17時まで」のように話した場合の一括入力 ---
             if (format === 3) {
                 let dayVal = parseDayWord(transcript);
                 if (dayVal && (transcript.includes('時') || transcript.includes('から'))) {
-                    // 時間部分をすべて抽出
-                    let timeMatches = transcript.match(/(\d{1,2}\s*時[\d半分]*)?/g);
-                    // より確実に抽出するため正規表現を拡張
-                    let times = [];
-                    let regex = /(?:(\d{1,2})時)?(\d{1,2}分|半)?/g;
-                    // 話された文章から時刻フレーズを探す
-                    let matches = transcript.matchAll(/(午後|午前)?\s*(\d{1,2})\s*時(半|\d{1,2}分)?/g);
-                    let extractedTimes = [];
-                    for (const match of matches) {
-                        let fullStr = match[0];
-                        let parsedT = parseSpokenTime(fullStr);
-                        if (parsedT) extractedTimes.push(parsedT);
-                    }
+                    let extractedTimes = extractTimesFromTranscript(transcript);
 
                     if (dayVal >= 1 && dayVal <= 31 && extractedTimes.length > 0) {
                         let startInput = document.getElementById(`f3-start-${dayVal}`);
                         let endInput = document.getElementById(`f3-end-${dayVal}`);
+                        
                         if (startInput && extractedTimes[0]) startInput.value = extractedTimes[0];
                         if (endInput && extractedTimes[1]) endInput.value = extractedTimes[1];
+
                         calculateTotals();
                         triggerAutoSave();
-                        showMessage(`${dayVal}日の勤務時間（${extractedTimes[0]} 〜 ${extractedTimes[1] || ''}）をセットしました。`);
                         return;
                     }
                 }
@@ -1790,67 +1743,27 @@
             if (activeEl) {
                 const id = activeEl.id;
 
-                // 1. 作業内容欄
                 if (id === 'work-content-memo') {
                     activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
                     triggerAutoSave();
                     return;
                 }
-                // 2. 事務局記入欄
                 if (id === 'secretariat-memo') {
                     activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
                     triggerAutoSave();
                     return;
                 }
-                // 3. 配分金欄の項目名欄
                 if (id.startsWith('item-name-')) {
                     activeEl.value = transcript.substring(0, 10);
                     syncAllocationNames();
                     triggerAutoSave();
                     return;
                 }
-                // 4. 配分金欄の数値欄（単価や控除など）
                 if (id.includes('price') || id.includes('deduction') || id.includes('advance') || id.includes('material') || id.includes('admin')) {
                     let numMatch = transcript.match(/\d+/);
                     if (numMatch) {
                         activeEl.value = numMatch[0];
                         formatInput(activeEl);
-                    }
-                    return;
-                }
-
-                // 5. スケジュールの項目名・摘要項目欄・評価項目欄
-                if (id.startsWith('f1-h') || id.startsWith('f2-h')) {
-                    activeEl.value = transcript;
-                    triggerAutoSave();
-                    return;
-                }
-
-                // 6. スケジュールの特定の日の入力欄
-                // 様式1の摘要欄
-                if (format === 1 && id.startsWith('f1-text-')) {
-                    activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
-                    calculateTotals();
-                    triggerAutoSave();
-                    return;
-                }
-                // 様式2の数値欄
-                if (format === 2 && (id.startsWith('f2-n1-') || id.startsWith('f2-n2-'))) {
-                    let numMatch = transcript.match(/\d+/);
-                    if (numMatch) {
-                        activeEl.value = numMatch[0];
-                        calculateTotals();
-                        triggerAutoSave();
-                    }
-                    return;
-                }
-                // 様式3・様式4の時刻欄
-                if ((format === 3 || format === 4) && (id.includes('start') || id.includes('end') || id.includes('s1') || id.includes('e1') || id.includes('s2') || id.includes('e2'))) {
-                    let timeStr = parseSpokenTime(transcript);
-                    if (timeStr) {
-                        activeEl.value = timeStr;
-                        calculateTotals();
-                        triggerAutoSave();
                     }
                     return;
                 }
@@ -1861,9 +1774,9 @@
             if (memoArea) {
                 memoArea.value = (memoArea.value ? memoArea.value + " " : "") + transcript;
                 triggerAutoSave();
-                showMessage("作業内容欄に追記しました: " + transcript);
             }
         }
+
         function clearDataForDay(format, day) {
             if (format === 1) {
                 let el = document.getElementById(`f1-text-${day}`);
@@ -1888,45 +1801,6 @@
                 if (s2) s2.value = '';
                 if (e2) e2.value = '';
             }
-        }
-        function clearDayData(day) {
-            const format = parseInt(document.getElementById('report-format').value);
-            if (format === 3) {
-                const startEl = document.getElementById(`f3-start-${day}`);
-                const endEl = document.getElementById(`f3-end-${day}`);
-                if (startEl) { startEl.value = ''; startEl.dispatchEvent(new Event('input')); }
-                if (endEl) { endEl.value = ''; endEl.dispatchEvent(new Event('input')); }
-            } else if (format === 4) {
-                ['s1', 'e1', 's2', 'e2'].forEach(k => {
-                    const el = document.getElementById(`f4-${k}-${day}`);
-                    if (el) { el.value = ''; el.dispatchEvent(new Event('input')); }
-                });
-            } else if (format === 1) {
-                const textEl = document.getElementById(`f1-text-${day}`);
-                const evalEl = document.getElementById(`f1-eval-${day}`);
-                if (textEl) { textEl.value = ''; textEl.dispatchEvent(new Event('input')); }
-                if (evalEl) { evalEl.value = ''; evalEl.dispatchEvent(new Event('input')); }
-            } else if (format === 2) {
-                const n1 = document.getElementById(`f2-n1-${day}`);
-                const n2 = document.getElementById(`f2-n2-${day}`);
-                if (n1) { n1.value = ''; n1.dispatchEvent(new Event('input')); }
-                if (n2) { n2.value = ''; n2.dispatchEvent(new Event('input')); }
-            }
-            calculateTotals();
-        }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-            // 'service-worker.js' を登録 (index.htmlからの相対パス)
-            navigator.serviceWorker.register('service-worker.js')
-              .then((registration) => {
-                console.log('Service Worker registered successfully:', registration.scope);
-              })
-              .catch((error) => {
-                console.log('Service Worker registration failed:', error);
-              });
-          });
         }
     </script>
 </body>
