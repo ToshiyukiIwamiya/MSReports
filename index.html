@@ -1748,6 +1748,17 @@
                     triggerAutoSave();
                     return;
                 }
+                if (id.includes('start') || id.includes('end')) {
+                    let extractedTimes = extractTimesFromTranscript(transcript);
+
+                    if (extractedTimes.length > 0) {
+                        let timeInput = document.getElementById(id);
+                        
+                        if (timeInput && extractedTimes[0]) timeInput.value = extractedTimes[0];
+                    }
+                    triggerAutoSave();
+                    return;
+                }
                 if (id === 'secretariat-memo') {
                     activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
                     triggerAutoSave();
