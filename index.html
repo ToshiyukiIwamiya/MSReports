@@ -1657,7 +1657,7 @@
             return null;
         }
 
-        // 音声認識されたテキストから数値群を正確に抽出してペアリングするヘルパー
+        // 音声認識されたテキストから数値を正確に抽出してペアリングするヘルパー
         function extractNumbersFromTranscript(text) {
             let t = text;
             // 漢数字の簡易置換
@@ -1696,7 +1696,7 @@
 
             // 「◯時◯分」や「◯時」のパターンを全て抽出する
             // 例: "9時" と "17時" や "9時半" と "17時" など
-            let regex = /(午前|午後|夕方|夜)?\s*(\d{1,2})\s*時(\s*(\d{1,2})\s*分)?/g;
+            let regex = /(午前|午後|夕方|夜)?\D*\s*(\d{1,2})\s*時(\s*(\d{1,2})\s*分)?/g;
             let match;
             let results = [];
 
@@ -1746,7 +1746,7 @@
                 }
             }
 
-            // --- 特殊要件（様式2対応）：「16日9と17時」のように話した場合の一括入力 ---
+            // --- 特殊要件（様式2対応）：「16日9と17」のように話した場合の一括入力 ---
             if (format === 2) {
                 let dayVal = parseDayWord(transcript);
                 if (dayVal) {
@@ -1756,8 +1756,8 @@
                         let n1 = document.getElementById(`f2-num1-${dayVal}`);
                         let n2 = document.getElementById(`f3-num2-${dayVal}`);
                         
-                        if (n1 && extractedNumbers[0]) n1.value = extractedNumbers[0];
-                        if (n2 && extractedNumbers[1]) n2.value = extractedNumbers[1];
+                        if (n1 && extractedNumbers[1]) n1.value = extractedNumbers[1];
+                        if (n2 && extractedNumbers[2]) n2.value = extractedNumbers[2];
 
                         calculateTotals();
                         triggerAutoSave();
