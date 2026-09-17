@@ -1786,6 +1786,30 @@
                 }
             }
 
+            // --- 特殊要件（様式4対応）：「16日の6時から8時までと16時から18時まで」のように話した場合の一括入力 ---
+            if (format === 4) {
+                let dayVal = parseDayWord(transcript);
+                if (dayVal && (transcript.includes('時') || transcript.includes('から'))) {
+                    let extractedTimes = extractTimesFromTranscript(transcript);
+
+                    if (dayVal >= 1 && dayVal <= 31 && extractedTimes.length > 0) {
+                        let startInput1 = document.getElementById(`f4-start1-${dayVal}`);
+                        let endInput1 = document.getElementById(`f4-end1-${dayVal}`);
+                        let startInput2 = document.getElementById(`f4-start2-${dayVal}`);
+                        let endInput2 = document.getElementById(`f4-end2-${dayVal}`);
+                        
+                        if (startInput1 && extractedTimes[0]) startInput1.value = extractedTimes[0];
+                        if (endInput1 && extractedTimes[1]) endInput1.value = extractedTimes[1];
+                        if (startInput2 && extractedTimes[2]) startInput2.value = extractedTimes[2];
+                        if (endInput2 && extractedTimes[3]) endInput2.value = extractedTimes[3];
+
+                        calculateTotals();
+                        triggerAutoSave();
+                        return;
+                    }
+                }
+            }
+
             // --- フォーカス位置に応じた入力制御 ---
             if (activeEl) {
                 const id = activeEl.id;
@@ -1795,7 +1819,7 @@
                     triggerAutoSave();
                     return;
                 }
-                if (id.includes('num')) {
+                if (id.includes('f2-num')) {
                     let extractedNumbers = extractNumbersFromTranscript(transcript);
 
                     if (extractedNumbers.length > 0) {
