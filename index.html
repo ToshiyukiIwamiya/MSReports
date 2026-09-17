@@ -1735,7 +1735,7 @@
             console.log("解析テキスト:", transcript, "現在の様式:", format, "フォーカス要素:", activeEl ? activeEl.id : "なし");
 
             // --- 共通要件：特定の日のデータ消去コマンド（例：「16日のデータ消して」） ---
-            if (transcript.includes('消す') || transcript.includes('クリア') || transcript.includes('削除')) {
+            if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
                 let targetDay = parseDayWord(transcript);
                 if (targetDay && targetDay >= 1 && targetDay <= 31) {
                     clearDataForDay(format, targetDay);
