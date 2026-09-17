@@ -1754,7 +1754,7 @@
 
                     if (dayVal >= 1 && dayVal <= 31 && extractedNumbers.length > 0) {
                         let n1 = document.getElementById(`f2-num1-${dayVal}`);
-                        let n2 = document.getElementById(`f2-num2-${dayVal}`);
+                        let n2 = document.getElementById(`f3-num2-${dayVal}`);
                         
                         if (n1 && extractedNumbers[0]) n1.value = extractedNumbers[0];
                         if (n2 && extractedNumbers[1]) n2.value = extractedNumbers[1];
@@ -1792,14 +1792,6 @@
 
                 if (id === 'work-content-memo') {
                     activeEl.value = (activeEl.value ? activeEl.value + " " : "") + transcript;
-                    triggerAutoSave();
-                    return;
-                }
-                if (id.includes('text')) {
-                    let textInput = document.getElementById(id);
-                    if (textInput) {
-                        textInput.value = (textInput.value ? textInput.value + " " : "") + transcript;
-                    calculateTotals();
                     triggerAutoSave();
                     return;
                 }
