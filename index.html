@@ -1831,6 +1831,16 @@
                     triggerAutoSave();
                     return;
                 }
+                if (id.includes('f1-text')) {
+                    let textArea = document.getElementById(id);
+                        
+                    if (textArea) {
+                        textArea.value = (textArea.value ? textArea.value + " " : "") + transcript;
+                    }
+                    calculateTotals();
+                    triggerAutoSave();
+                    return;
+                }
                 if (id.includes('f2-num')) {
                     let extractedNumbers = extractNumbersFromTranscript(transcript);
 
