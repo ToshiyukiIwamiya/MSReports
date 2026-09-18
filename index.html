@@ -1746,6 +1746,18 @@
                 }
             }
 
+            // --- 特殊要件（様式1対応）：「16日」のように話した場合のfocusの移動 ---
+            if (format === 1) {
+                let dayVal = parseDayWord(transcript);
+                if (dayVal) {
+                    if (dayVal >= 1 && dayVal <= 31) {
+                        let textData = document.getElementById(`f1-text-${dayVal}`);
+                        textData.focus();
+                        return;
+                    }
+                }
+            }
+
             // --- 特殊要件（様式2対応）：「16日は9と17」のように話した場合の一括入力 ---
             if (format === 2) {
                 let dayVal = parseDayWord(transcript);
