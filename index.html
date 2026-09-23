@@ -70,23 +70,14 @@
                 -webkit-text-fill-color: transparent !important; /* Safari/Chrome対策 */
             }
         }
-        input, textarea {
+        input, textarea, select {
             background-color: transparent;
             border: none;
             outline: none;
             width: 100%;
             height: 100%;
             padding: 2px 4px;
-            font-size: 12px;
-        }
-        select {
-            background-color: transparent;
-            border: none;
-            outline: none;
-            width: 100%;
-            height: 100%;
-            padding-right: 1px;
-            font-size: 11px;
+            font-size: 13px;
         }
         input:focus, textarea:focus, select:focus {
             background-color: rgba(59, 130, 246, 0.08);
@@ -210,7 +201,7 @@
             </div>
             <div class="text-base font-medium tracking-widest flex items-center gap-2">
                 <div class="flex items-center gap-1">
-                    <select id="report-format" onchange="updateCalendar(); updateTopItemRow(); triggerAutoSave();" class="print-select font-bold text-sm border-b border-black cursor-pointer bg-white">
+                    <select id="report-format" onchange="updateCalendar(); triggerAutoSave();" class="print-select font-bold text-sm border-b border-black cursor-pointer bg-white">
                         <option value="1">様式1（文字列）</option>
                         <option value="2">様式2（件数）</option>
                         <option value="3" selected>様式3（時刻）</option>
@@ -278,7 +269,7 @@
                         【事務局記入欄】
                     </div>
                     <div class="flex-grow p-1">
-                        <textarea id="secretariat-memo" class="resize-none text-xs locked-target" oninput="triggerAutoSave()" placeholder=""></textarea>
+                        <textarea id="secretariat-memo" class="resize-none text-xs" oninput="triggerAutoSave()" placeholder=""></textarea>
                     </div>
                 </div>
 
@@ -299,41 +290,27 @@
                     </div>
                 </div>
 
-                <div id="top-item-row-container" class="main-border p-1.5 text-xs space-y-1 print:space-y-0.5 bg-white">
+                <div class="main-border p-1.5 text-xs space-y-1 print:space-y-0.5 bg-white">
                     <div class="font-bold text-[12px] border-b border-black pb-0.5 mb-0.5">配分金</div>
 
-                <!-- 【パターンA】掛け算計算用（最初は表示） -->
-                <div id="top-item-row-a" class="flex items-center justify-between">
-                    <input type="text" id="item-name-1a" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink-0 font-medium text-xs locked-target" value="時間" placeholder="項目名(10文字)" oninput="syncItemNames1(this); triggerAutoSave();">
-                    <div class="flex items-center gap-1">
-                        <input type="text" id="p1-price" class="border-b border-gray-400 w-10 text-right shrink-0 calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
-                        <span class="shrink-0 text-xs">円×</span>
-                        <input type="text" id="p1-count" class="border-b border-gray-400 w-10 text-right shrink-0 calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="評価合計と連動">
-                        <span class="shrink-0 text-xs">＝</span>
-                        <input type="text" id="p1-total-a" class="border-b border-gray-400 w-14 text-right font-medium shrink-0 calc-total text-xs" readonly placeholder="0">
-                        <span class="shrink-0 text-xs w-4 text-left">円</span>
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="item-name-1" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="時間" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <input type="text" id="p1-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
+                            <span class="shrink-0 text-xs">円×</span>
+                            <input type="text" id="p1-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="評価合計と連動">
+                            <span class="shrink-0 text-xs">＝</span>
+                            <input type="text" id="p1-total" class="border-b border-gray-400 w-14 text-right font-medium shrink calc-total text-xs" readonly placeholder="0">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
                     </div>
-                </div>
-
-                <!-- 【パターンB】金額ダイレクト入力用（最初は hidden で非表示） -->
-                <div id="top-item-row-b" class="flex items-center justify-between hidden">
-                    <input type="text" id="item-name-1b" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink-0 font-medium text-xs locked-target" value="分配金" placeholder="項目名(10文字)" oninput="syncItemNames1(this); triggerAutoSave()">
-                    <div class="flex items-center gap-1">
-                        <div class="w-12"></div>
-                        <span class="w-2"></span>
-                        <div class="w-8"></div>
-                        <span class="w-3"></span>
-                        <input type="text" id="p1-total-b" class="border-b border-gray-400 w-16 text-right font-medium shrink-0 sum-group-1 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
-                        <span class="shrink-0 text-xs w-4 text-left">円</span>
-                    </div>
-                </div>
 
                     <div class="flex items-center justify-between" id="row-allocation-2">
-                        <input type="text" id="item-name-2" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="ドアポスト" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <input type="text" id="item-name-2" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="数値2" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
                         <div class="flex items-center gap-1">
                             <input type="text" id="p2-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
                             <span class="shrink-0 text-xs">円×</span>
-                            <input type="text" id="p2-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="様式2の件数2合計と連動">
+                            <input type="text" id="p2-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="様式2の数値2合計と連動">
                             <span class="shrink-0 text-xs">＝</span>
                             <input type="text" id="p2-total" class="border-b border-gray-400 w-14 text-right font-medium shrink calc-total text-xs" readonly placeholder="0">
                             <span class="shrink-0 text-xs w-4 text-left">円</span>
@@ -486,7 +463,6 @@
             // ローカルストレージからの復元
             loadFromLocalStorage();
             updateCalendar();
-            updateTopItemRow();
             initSpeechRecognition();
         }
 
@@ -584,32 +560,25 @@
             }
         }
 
-        function syncItemNames1(itemName1) {
-            const itemName1a = document.getElementById('item-name-1a').value || '';
-            const itemName1b = document.getElementById('item-name-1b').value || '';
-            itemName1a =itemName1.value;
-            itemName1b =itemName1.value;
-        }
-
         function syncAllocationNames() {
             const format = parseInt(document.getElementById('report-format').value);
-            const itemName1 = document.getElementById('item-name-1a').value || '';
+            const itemName1 = document.getElementById('item-name-1').value || '';
 
             if (format === 1) {
-                const selectOptions = ['日数', '件数', '分配金'];
+                const selectOptions = ['日数', '件数', '日当'];
                 const matchedOption = selectOptions.includes(itemName1) ? itemName1 : '日数';
                 const evalTypeSelect1 = document.getElementById('f1-eval-type-1');
                 const evalTypeSelect2 = document.getElementById('f1-eval-type-2');
                 if (evalTypeSelect1) evalTypeSelect1.value = matchedOption;
                 if (evalTypeSelect2) evalTypeSelect2.value = matchedOption;
             } else if (format === 2) {
-                const name2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '集合ポスト';
+                const name2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '数値2';
                 const h1_1 = document.getElementById('f2-h1-col1');
                 const h2_1 = document.getElementById('f2-h2-col1');
                 const h1_2 = document.getElementById('f2-h1-col2');
                 const h2_2 = document.getElementById('f2-h2-col2');
-                if (h1_1) h1_1.value = itemName1 || '戸建て・ドアポスト';
-                if (h2_1) h2_1.value = itemName1 || '戸建て・ドアポスト';
+                if (h1_1) h1_1.value = itemName1 || '数値1';
+                if (h2_1) h2_1.value = itemName1 || '数値1';
                 if (h1_2) h1_2.value = name2;
                 if (h2_2) h2_2.value = name2;
             } else if (format === 3) {
@@ -647,12 +616,25 @@
                 evalType2.value = val;
                 handleFormat1ItemName1(val);
             }
-            updateTopItemRow()
             calculateTotals();
             triggerAutoSave();
         }
 
         function handleFormat1ItemName1(val) {
+            const itemName1 = document.getElementById('item-name-1');
+            const itemName5 = document.getElementById('item-name-5');
+            if (itemName1) {
+                if (val === '件数') {
+                    itemName1.value = val;
+                    itemName5.value = '立替材料費';
+                } else if (val === '日当') {
+                    itemName1.value = '';
+                    itemName5.value = '配分金';
+                } else {
+                    itemName1.value = val;
+                    itemName5.value = '立替材料費';
+                }
+            }
             for (let i = 1; i <= 31; i++) {
                 const textInput = document.getElementById(`f1-text-${i}`);
                 const evalField = document.getElementById(`f1-eval-${i}`);
@@ -669,7 +651,7 @@
             if (evalType1) evalType1.value = val;
             if (evalType2) evalType2.value = val;
 
-            const itemName1 = document.getElementById('item-name-1a');
+            const itemName1 = document.getElementById('item-name-1');
             if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
                 itemName1.value = val;
             }
@@ -685,7 +667,7 @@
             if (evalType1) evalType1.value = val;
             if (evalType2) evalType2.value = val;
 
-            const itemName1 = document.getElementById('item-name-1a');
+            const itemName1 = document.getElementById('item-name-1');
             if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
                 itemName1.value = val;
             }
@@ -898,13 +880,13 @@
             if (format === 1) {
                 const p1Count = document.getElementById('p1-count');
                 const evalType = document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数';
-                const p1Totalb = document.getElementById(`p1-total-b`);
-                if (p1Count && evalType === '分配金') {
+                const itemAdvance = document.getElementById(`item-advance`);
+                if (p1Count && evalType === '日当') {
                     p1Count.value = '';
-                    p1Totalb.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
+                    itemAdvance.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
                 } else {
                     p1Count.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
-                    p1Totalb.value = '';
+                    itemAdvance.value = '';
                 }
 
             } else if (format === 2) {
@@ -943,24 +925,14 @@
         }
 
         function calculateFinancials() {
-            const format = parseInt(document.getElementById('report-format').value);
-            const evalType = document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数';
-            let t1 = '';
-            if (format === 1 && evalType === '分配金') {
-                t1 = parseNum(document.getElementById(`p1-total-b`).value);
-            } else {
-                const price = parseNum(document.getElementById(`p1-price`).value);
-                const count = parseNum(document.getElementById(`p1-count`).value);
-                const total = price * count;
-                document.getElementById(`p1-total-a`).value = total === 0 ? '' : formatNumber(total);
-                t1 = parseNum(document.getElementById(`p1-total-a`).value);
-            }
-            for (let i = 2; i <= 3; i++) {
+            for (let i = 1; i <= 3; i++) {
                 const price = parseNum(document.getElementById(`p${i}-price`).value);
                 const count = parseNum(document.getElementById(`p${i}-count`).value);
                 const total = price * count;
                 document.getElementById(`p${i}-total`).value = total === 0 ? '' : formatNumber(total);
             }
+
+            const t1 = parseNum(document.getElementById('p1-total').value);
             const t2 = parseNum(document.getElementById('p2-total').value);
             const t3 = parseNum(document.getElementById('p3-total').value);
             const deduction = parseNum(document.getElementById('item-deduction').value);
@@ -989,23 +961,23 @@
                 rowAllocation2.style.display = (format === 2) ? 'flex' : 'none';
             }
 
-            const itemName1 = document.getElementById('item-name-1a');
-            if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
-                if (format === 2) itemName1.value = '戸建て・ドアポスト';
+            const itemName1Input = document.getElementById('item-name-1');
+            if (itemName1Input && !document.getElementById('is-locked-checkbox').checked) {
+                if (format === 2) itemName1Input.value = '数値1';
                 else if (format === 3 || format === 4) {
-                    if (!itemName1.value || itemName1.value === '戸建て・ドアポスト' || itemName1.value === '日数') {
-                        itemName1.value = '時間';
+                    if (!itemName1Input.value || itemName1Input.value === '数値1' || itemName1Input.value === '日数') {
+                        itemName1Input.value = '時間';
                     }
                 }
                 else if (format === 1) {
-                    if (!itemName1.value || itemName1.value === '戸建て・ドアポスト' || itemName1.value === '時間') {
-                        itemName1.value = '日数';
+                    if (!itemName1Input.value || itemName1Input.value === '数値1' || itemName1Input.value === '時間') {
+                        itemName1Input.value = '日数';
                     }
                 }
             }
 
             if (format === 1) {
-                const currentEvalType = itemName1 ? itemName1.value : '日数';
+                const currentEvalType = itemName1Input ? itemName1Input.value : '日数';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
@@ -1014,7 +986,7 @@
                         <select id="f1-eval-type-1" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat1EvalTypeChange(this)">
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                             <option value="件数" ${currentEvalType === '件数' ? 'selected' : ''}>件数</option>
-                            <option value="分配金" ${currentEvalType === '分配金' ? 'selected' : ''}>分配金</option>
+                            <option value="日当" ${currentEvalType === '日当' ? 'selected' : ''}>日当</option>
                         </select>
                     </th>
                     <th class="col-day">日</th>
@@ -1024,13 +996,13 @@
                         <select id="f1-eval-type-2" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat1EvalTypeChange(this)">
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                             <option value="件数" ${currentEvalType === '件数' ? 'selected' : ''}>件数</option>
-                            <option value="分配金" ${currentEvalType === '分配金' ? 'selected' : ''}>分配金</option>
+                            <option value="日当" ${currentEvalType === '日当' ? 'selected' : ''}>日当</option>
                         </select>
                     </th>
                 `;
             } else if (format === 2) {
-                const currentName1 = itemName1 ? itemName1.value : '戸建て・ドアポスト';
-                const currentName2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '集合ポスト';
+                const currentName1 = itemName1Input ? itemName1Input.value : '数値1';
+                const currentName2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '数値2';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
@@ -1044,7 +1016,7 @@
                     <th class="col-eval"><input type="text" class="text-center font-bold" value="件数" readonly style="background:transparent;" tabindex="-1"></th>
                 `;
             } else if (format === 3) {
-                const currentEvalType = itemName1 ? itemName1.value : '時間';
+                const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
@@ -1074,7 +1046,7 @@
                 if (s1) s1.value = currentEvalType;
                 if (s2) s2.value = currentEvalType;
             } else if (format === 4) {
-                const currentEvalType = itemName1 ? itemName1.value : '時間';
+                const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
@@ -1150,30 +1122,30 @@
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-start-${d1}" placeholder="09:00" class="text-center entry-f3-c1" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-end-${d1}" placeholder="17:00" class="text-center entry-f3-c2" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-start-${d1}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-end-${d1}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f3-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-start-${d2}" placeholder="09:00" class="text-center entry-f3-c1" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-end-${d2}" placeholder="17:00" class="text-center entry-f3-c2" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-start-${d2}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-end-${d2}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f3-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
                     `;
                 } else if (format === 4) {
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start1-${d1}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end1-${d1}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start2-${d1}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end2-${d1}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start1-${d1}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end1-${d1}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start2-${d1}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end2-${d1}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f4-eval-${d1}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
                         <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start1-${d2}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end1-${d2}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start2-${d2}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end2-${d2}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start1-${d2}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end1-${d2}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start2-${d2}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end2-${d2}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f4-eval-${d2}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
                     `;
                 }
@@ -1218,8 +1190,8 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-start-${d1_16}" placeholder="09:00" class="text-center entry-f3-c1" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-end-${d1_16}" placeholder="17:00" class="text-center entry-f3-c2" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-start-${d1_16}" placeholder="09:00" class="text-center entry-f3-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-end-${d1_16}" placeholder="17:00" class="text-center entry-f3-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td class="col-eval"><input type="text" id="f3-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
                     <td><input type="text" id="f3-col-total-1" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
@@ -1230,10 +1202,10 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-start1-${d1_16}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-end1-${d1_16}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-start2-${d1_16}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-end2-${d1_16}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="extractTimeAndReplace(this); calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-start1-${d1_16}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-end1-${d1_16}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-start2-${d1_16}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-end2-${d1_16}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" oninput="calculateTotals(); triggerAutoSave();" onblur="handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td class="col-eval"><input type="text" id="f4-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100 text-[10px]">合計</td>
                     <td><input type="text" id="f4-col-total-1" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
@@ -1245,45 +1217,6 @@
             }
 
             calculateTotals();
-        }
-
-        function extractTimeAndReplace(inputElement) {
-            let rawText = inputElement.value;
-
-            // すでに 「00:00」 の形式が含まれている場合は処理をスキップ（無限ループ防止）
-            if (/(\d{1,2}:\d{1,2})/.test(rawText)) return;
-            let results = extractTimesFromTranscript(rawText);
-
-            // マッチするものがあった場合のみ処理
-            if (results.length > 0) {
-                // 例として、最初に見つかった時間を入力欄にセットする場合
-                let newText = results[0]; 
-        
-                // 2. ここが重要：現在の値と新しい値が「異なる場合のみ」書き換える
-                if (rawText !== newText) {
-                    inputElement.value = newText;
-                }
-            }
-        }
-
-        function updateTopItemRow() {
-            const format = parseInt(document.getElementById('report-format').value);
-            const currentEvalType = document.getElementById('f1-eval-type-1');
-            const rowA = document.getElementById('top-item-row-a');
-            const rowB = document.getElementById('top-item-row-b');
-            console.log(currentEvalType.value);
-            
-            if (!rowA || !rowB) return; // 要素がない場合はスキップ
-            
-            if (format === 1 && currentEvalType.value === '分配金') {
-                // パターンAを隠す、パターンBを表示
-                rowA.classList.add('hidden');
-                rowB.classList.remove('hidden');
-            } else {
-                // パターンAを表示、パターンBを隠す
-                rowA.classList.remove('hidden');
-                rowB.classList.add('hidden');
-            }
         }
 
         // ロックチェックボックス変更時の処理
@@ -1816,8 +1749,6 @@
 
         // 音声認識されたテキストから時刻群を正確に抽出してペアリングするヘルパー
         function extractTimesFromTranscript(text) {
-            let m = text.match(/(\d{1,2}:\d{1,2})/);
-            if (m) return;
             let t = text;
             // 漢数字の簡易置換
             t = t.replace(/十/g, '1')
