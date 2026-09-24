@@ -1384,7 +1384,7 @@
             return String(num).padStart(length, '0');
         }
 
-        function exportJSONFile() {
+        async function exportJSONFile() {
             const data = collectFormData();
             const contractNo = data.contractNo || '2601000';
             const month = data.month || '9';
@@ -1394,18 +1394,43 @@
             const day = padZero(now.getDate());
             const hours = padZero(now.getHours());
             const minutes = padZero(now.getMinutes());
-
+        
             const filename = `就業報告書${contractNo}_${month}月_${year}${mon}${day}${hours}${minutes}.json`;
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        
+            // File System Access API がサポートされているか確認
+            if ('showSaveFilePicker' in window) {
+                try {
+                    // 保存先（サブフォルダ）とファイル名を選択するダイアログを表示
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{
+                            description: 'JSON Files',
+                            accept: {
+                                'application/json': ['.json'],
+                            },
+                        }],
+                    });
+        
+                    // 選択された場所にファイルを書き込み
+                    const writable = await handle.createWritable();
+                    await writable.write(JSON.stringify(data, null, 2));
+                    await writable.close();
+                } catch (err) {
+                    // ユーザーがキャンセルした場合やエラー時の処理
+                    console.log('保存がキャンセルされたか、エラーが発生しました:', err);
+                }
+            } else {
+                // 非対応ブラウザ（iOS/Androidのブラウザや一部の古い環境）用のフォールバック
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
         }
 
         async function importJSONFiles(event) {
