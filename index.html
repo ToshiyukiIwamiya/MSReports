@@ -1868,7 +1868,6 @@
             // --- 特殊要件（様式2対応）：「16日は9件と1717件」のように話した場合の一括入力 ---
             if (format === 2) {
                 let dayVal = parseDayWord(transcript);
-                document.getElementById('processed-transcript-display').textContent = dayVal;
 
                 if (dayVal) {
                     let extractedNumbers = extractNumbersFromTranscript(transcript);
