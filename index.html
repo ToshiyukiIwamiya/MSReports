@@ -188,6 +188,7 @@
         <div id="voice-status" class="mt-1.5 text-xs text-emerald-700 font-medium hidden">🎤 音声認識中...話してください</div>
         <div id="voice-transcript-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
         <div id="processed-transcript-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
+        <div id="debug-data-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
     </div>
 
     <!-- 横幅が狭い端末でもレイアウトが潰れないスクロールラッパー -->
@@ -290,10 +291,22 @@
                     </div>
                 </div>
 
-                <div class="main-border p-1.5 text-xs space-y-1 print:space-y-0.5 bg-white">
+                <div id="top-item-row-container" class="main-border p-1.5 text-xs space-y-1 print:space-y-0.5 bg-white">
                     <div class="font-bold text-[12px] border-b border-black pb-0.5 mb-0.5">配分金</div>
 
-                    <div class="flex items-center justify-between">
+                    <div id="top-item-row-0" class="flex items-center justify-between hidden">
+                        <input type="text" id="item-name-0" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="配分金" placeholder="項目名(10文字)" oninput="triggerAutoSave()">
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="p0-total" class="border-b border-gray-400 w-16 text-right font-medium shrink sum-group-1 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div id="top-item-row-1" class="flex items-center justify-between">
                         <input type="text" id="item-name-1" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="時間" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
                         <div class="flex items-center gap-1">
                             <input type="text" id="p1-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
@@ -565,7 +578,7 @@
             const itemName1 = document.getElementById('item-name-1').value || '';
 
             if (format === 1) {
-                const selectOptions = ['日数', '件数', '日当'];
+                const selectOptions = ['日数', '件数', '配分金'];
                 const matchedOption = selectOptions.includes(itemName1) ? itemName1 : '日数';
                 const evalTypeSelect1 = document.getElementById('f1-eval-type-1');
                 const evalTypeSelect2 = document.getElementById('f1-eval-type-2');
@@ -577,8 +590,8 @@
                 const h2_1 = document.getElementById('f2-h2-col1');
                 const h1_2 = document.getElementById('f2-h1-col2');
                 const h2_2 = document.getElementById('f2-h2-col2');
-                if (h1_1) h1_1.value = itemName1 || '数値1';
-                if (h2_1) h2_1.value = itemName1 || '数値1';
+                if (h1_1) h1_1.value = itemName1 || '戸建て';
+                if (h2_1) h2_1.value = itemName1 || '戸建て';
                 if (h1_2) h1_2.value = name2;
                 if (h2_2) h2_2.value = name2;
             } else if (format === 3) {
@@ -603,6 +616,22 @@
             calculateTotals();
         }
 
+        function handleFormatChange() {
+            const format = parseInt(document.getElementById('report-format').value);
+            if (format === 1) {
+                const evalTypeSelect1 = document.getElementById('f1-eval-type-1');
+                handleFormat1EvalTypeChange(evalTypeSelect1);
+            } else if (format === 3) {
+                const evalTypeSelect3 = document.getElementById('f3-eval-type-1');
+                handleFormat3EvalTypeChange(evalTypeSelect3);
+            } else if (format === 4) {
+                const evalTypeSelect4 = document.getElementById('f4-eval-type-1');
+                handleFormat4EvalTypeChange(evalTypeSelect4);
+            } else {
+                return;
+            }
+        }
+
         function handleFormat1EvalTypeChange(source) {
             const val = source.value;
             const id = source.id;
@@ -616,23 +645,24 @@
                 evalType2.value = val;
                 handleFormat1ItemName1(val);
             }
+            updateTopItemRow();
             calculateTotals();
             triggerAutoSave();
         }
 
         function handleFormat1ItemName1(val) {
+            const itemName0 = document.getElementById('item-name-0');
             const itemName1 = document.getElementById('item-name-1');
-            const itemName5 = document.getElementById('item-name-5');
             if (itemName1) {
                 if (val === '件数') {
+                    itemName0.value = val;
+                    itemName1.value = '件数';
+                } else if (val === '配分金') {
+                    itemName0.value = '配分金';
                     itemName1.value = val;
-                    itemName5.value = '立替材料費';
-                } else if (val === '日当') {
-                    itemName1.value = '';
-                    itemName5.value = '配分金';
                 } else {
-                    itemName1.value = val;
-                    itemName5.value = '立替材料費';
+                    itemName0.value = val;
+                    itemName1.value = '日数';
                 }
             }
             for (let i = 1; i <= 31; i++) {
@@ -651,9 +681,16 @@
             if (evalType1) evalType1.value = val;
             if (evalType2) evalType2.value = val;
 
+            const itemName0 = document.getElementById('item-name-0');
             const itemName1 = document.getElementById('item-name-1');
             if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
-                itemName1.value = val;
+                if (val === '日数') {
+                    itemName0.value = val;
+                    itemName1.value = '日数';
+                } else {
+                    itemName0.value = val;
+                    itemName1.value = '時間';
+                }
             }
             calculateTotals();
             triggerAutoSave();
@@ -667,9 +704,16 @@
             if (evalType1) evalType1.value = val;
             if (evalType2) evalType2.value = val;
 
+            const itemName0 = document.getElementById('item-name-0');
             const itemName1 = document.getElementById('item-name-1');
             if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
-                itemName1.value = val;
+                if (val === '日数') {
+                    itemName0.value = val;
+                    itemName1.value = '日数';
+                } else {
+                    itemName0.value = val;
+                    itemName1.value = '時間';
+                }
             }
             calculateTotals();
             triggerAutoSave();
@@ -877,16 +921,16 @@
                 }
             }
 
+            const p0Total = document.getElementById('p0-total');
+            p0Total.value = 0
             if (format === 1) {
                 const p1Count = document.getElementById('p1-count');
                 const evalType = document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数';
-                const itemAdvance = document.getElementById(`item-advance`);
-                if (p1Count && evalType === '日当') {
-                    p1Count.value = '';
-                    itemAdvance.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
+                if (p1Count && evalType === '配分金') {
+                    p0Total.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
+                    p1Count.value = 0
                 } else {
                     p1Count.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
-                    itemAdvance.value = '';
                 }
 
             } else if (format === 2) {
@@ -932,13 +976,14 @@
                 document.getElementById(`p${i}-total`).value = total === 0 ? '' : formatNumber(total);
             }
 
+            const t0 = parseNum(document.getElementById('p0-total').value);
             const t1 = parseNum(document.getElementById('p1-total').value);
             const t2 = parseNum(document.getElementById('p2-total').value);
             const t3 = parseNum(document.getElementById('p3-total').value);
             const deduction = parseNum(document.getElementById('item-deduction').value);
             const advance = parseNum(document.getElementById('item-advance').value);
 
-            const subtotal = t1 + t2 + t3 + deduction + advance;
+            const subtotal = t0 + t1 + t2 + t3 + deduction + advance;
             document.getElementById('subtotal-amount').value = subtotal === 0 ? '' : formatNumber(subtotal);
 
             const material = parseNum(document.getElementById('item-material').value);
@@ -963,14 +1008,14 @@
 
             const itemName1Input = document.getElementById('item-name-1');
             if (itemName1Input && !document.getElementById('is-locked-checkbox').checked) {
-                if (format === 2) itemName1Input.value = '数値1';
+                if (format === 2) itemName1Input.value = '戸建て';
                 else if (format === 3 || format === 4) {
-                    if (!itemName1Input.value || itemName1Input.value === '数値1' || itemName1Input.value === '日数') {
+                    if (!itemName1Input.value || itemName1Input.value === '戸建て' || itemName1Input.value === '日数') {
                         itemName1Input.value = '時間';
                     }
                 }
                 else if (format === 1) {
-                    if (!itemName1Input.value || itemName1Input.value === '数値1' || itemName1Input.value === '時間') {
+                    if (!itemName1Input.value || itemName1Input.value === '戸建て' || itemName1Input.value === '時間') {
                         itemName1Input.value = '日数';
                     }
                 }
@@ -981,27 +1026,27 @@
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
-                    <th style="width: 32%;"><input type="text" id="f1-h1-1" class="text-center font-bold" value="摘要" oninput="handleTableHeaderInput(1, 1, this)"></th>
+                    <th style="width: 28%;"><input type="text" id="f1-h1-1" class="text-center font-bold" value="摘要" oninput="handleTableHeaderInput(1, 1, this)"></th>
                     <th class="col-eval">
                         <select id="f1-eval-type-1" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat1EvalTypeChange(this)">
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                             <option value="件数" ${currentEvalType === '件数' ? 'selected' : ''}>件数</option>
-                            <option value="日当" ${currentEvalType === '日当' ? 'selected' : ''}>日当</option>
+                            <option value="配分金" ${currentEvalType === '配分金' ? 'selected' : ''}>配分金</option>
                         </select>
                     </th>
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
-                    <th style="width: 30%;"><input type="text" id="f1-h2-1" class="text-center font-bold" value="摘要" oninput="handleTableHeaderInput(1, 1, this)"></th>
+                    <th style="width: 28%;"><input type="text" id="f1-h2-1" class="text-center font-bold" value="摘要" oninput="handleTableHeaderInput(1, 1, this)"></th>
                     <th class="col-eval">
                         <select id="f1-eval-type-2" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat1EvalTypeChange(this)">
                             <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
                             <option value="件数" ${currentEvalType === '件数' ? 'selected' : ''}>件数</option>
-                            <option value="日当" ${currentEvalType === '日当' ? 'selected' : ''}>日当</option>
+                            <option value="配分金" ${currentEvalType === '配分金' ? 'selected' : ''}>配分金</option>
                         </select>
                     </th>
                 `;
             } else if (format === 2) {
-                const currentName1 = itemName1Input ? itemName1Input.value : '数値1';
+                const currentName1 = itemName1Input ? itemName1Input.value : '戸建て';
                 const currentName2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '数値2';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
@@ -1238,6 +1283,26 @@
             }
         }
 
+        function updateTopItemRow() {
+            const format = parseInt(document.getElementById('report-format').value);
+            const currentEvalType = document.getElementById('f1-eval-type-1');
+            const row0 = document.getElementById('top-item-row-0');
+            const row1 = document.getElementById('top-item-row-1');
+            console.log(currentEvalType.value);
+            
+            if (!row0 || !row1) return; // 要素がない場合はスキップ
+            
+            if (format === 1 && currentEvalType.value === '配分金') {
+                // パターン1を隠す、パターン0を表示
+                row1.classList.add('hidden');
+                row0.classList.remove('hidden');
+            } else {
+                // パターン1を表示、パターン0を隠す
+                row1.classList.remove('hidden');
+                row0.classList.add('hidden');
+            }
+        }
+
         // ロックチェックボックス変更時の処理
         function toggleLockState() {
             applyLockStateToElements();
@@ -1285,12 +1350,12 @@
                 inputs: {}
             };
 
-            for (let i = 1; i <= 7; i++) {
+            for (let i = 0; i <= 7; i++) {
                 const el = document.getElementById(`item-name-${i}`);
                 if (el) data.itemNames[`item-name-${i}`] = el.value;
             }
 
-            ['p1-price', 'p2-price', 'p3-price', 'p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
+            ['p0-price', 'p1-price', 'p2-price', 'p3-price', 'p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) data.financials[id] = el.value;
             });
@@ -1868,6 +1933,7 @@
             // --- 特殊要件（様式2対応）：「16日は9件と1717件」のように話した場合の一括入力 ---
             if (format === 2) {
                 let dayVal = parseDayWord(transcript);
+                document.getElementById('processed-transcript-display').textContent = dayVal;
 
                 if (dayVal) {
                     let extractedNumbers = extractNumbersFromTranscript(transcript);
