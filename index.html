@@ -202,7 +202,7 @@
             </div>
             <div class="text-base font-medium tracking-widest flex items-center gap-2">
                 <div class="flex items-center gap-1">
-                    <select id="report-format" onchange="updateCalendar(); triggerAutoSave();" class="print-select font-bold text-sm border-b border-black cursor-pointer bg-white">
+                    <select id="report-format" onchange="updateCalendar(); triggerAutoSave();" class="print-select font-bold text-sm border-b border-black cursor-pointer bg-white locked-target">
                         <option value="1">様式1（文字列）</option>
                         <option value="2">様式2（件数）</option>
                         <option value="3" selected>様式3（時刻）</option>
@@ -270,7 +270,7 @@
                         【事務局記入欄】
                     </div>
                     <div class="flex-grow p-1">
-                        <textarea id="secretariat-memo" class="resize-none text-xs" oninput="triggerAutoSave()" placeholder=""></textarea>
+                        <textarea id="secretariat-memo" class="resize-none text-xs locked-target" oninput="triggerAutoSave()" placeholder=""></textarea>
                     </div>
                 </div>
 
@@ -373,7 +373,7 @@
                             <span class="w-2"></span>
                             <div class="w-8"></div>
                             <span class="w-3"></span>
-                            <input type="text" id="subtotal-amount" class="border-b border-black w-16 text-right font-bold text-xs" readonly placeholder="0">
+                            <input type="text" id="subtotal-amount" class="border-b border-black w-16 text-right font-bold text-xs locked-target" readonly placeholder="0">
                             <span class="shrink-0 text-xs w-4 text-left">円</span>
                         </div>
                     </div>
