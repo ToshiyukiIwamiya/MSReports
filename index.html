@@ -127,7 +127,7 @@
 <body class="bg-slate-100 min-h-screen py-8 print:py-0" onload="initReport()">
 
     <!-- 操作パネル (no-print) -->
-    <div class="max-w-[210mm] mx-auto mb-3 px-4 no-print bg-white p-3 rounded-lg shadow border border-slate-200">
+    <div class="max-w-[185mm] mx-auto mb-3 px-4 no-print bg-white p-3 rounded-lg shadow border border-slate-200">
         <h1 class="text-lg font-bold text-slate-800">就業報告書 入力・作成フォーム</h1>
         <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
             <!-- 1. チェックボックス：「会員用に摘要名と項目名をロックする」 -->
@@ -156,9 +156,11 @@
             </button>
 
             <!-- 5. 一時保存（LocalStorageへ保存） -->
+<!--
             <button onclick="saveToLocalStorageManually()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 一時保存
             </button>
+-->
 
             <!-- 6. クリア（LocalStorageを消去してリロード） -->
             <button onclick="clearLocalStorageAndReload()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-medium px-3 py-1.5 rounded shadow transition">
