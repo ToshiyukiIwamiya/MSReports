@@ -959,9 +959,9 @@
                 if (p2Count) p2Count.value = hasCol2 ? formatNumber(colSum2) : '';
             } else if (format === 3 || format === 4) {
                 const p1Count = document.getElementById('p1-count');
-                const evalType = '時間';
+                const evalType = document.getElementById('f3-eval-type-1') ? document.getElementById('f3-eval-type-1').value : '日数';
                 if (p1Count) {
-                    p1Count.value = hasValidNumber && grandSum !== 0 ? grandSum.toFixed(2) : '';
+                    p1Count.value = hasValidNumber && evalType === '時間' ? grandSum.toFixed(2) : formatNumber(grandSum);
                 }
             }
 
@@ -1355,7 +1355,12 @@
                 if (el) data.itemNames[`item-name-${i}`] = el.value;
             }
 
-            ['p0-price', 'p1-price', 'p2-price', 'p3-price', 'p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
+            for (let i = 0; i <= 3; i++) {
+                const el = document.getElementById(`p${i}-price`);
+                if (el) data.financials[`p${i}-price`] = el.value;
+            }
+
+            ['p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) data.financials[id] = el.value;
             });
@@ -1588,7 +1593,7 @@
 
             const opt = {
                 margin:       [4, 4, 4, 4],
-                filename:     `就業報告書${contractNo}_${month}月(memberNo).pdf`,
+                filename:     `就業報告書${contractNo}_${month}月(${memberNo}).pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
