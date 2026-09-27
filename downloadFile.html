@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>就業報告書初期データダウンロード</title>
+</head>
+<body>
+
+    <!-- 表示させないためのリンク。JSで動的に設定します -->
+    <a href="#" id="downloadLink" class="force-download">就業報告書のダウンロード</a>
+    <script>
+        // URLの「?」以降のパラメータを解析する
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 「file」というオプションの値を取得
+        const file = urlParams.get('file'); 
+
+        // パラメータが空だった場合の対策（エラー防止）
+        if (!file) {
+            document.getElementById('downloadLink').textContent = "エラー：ファイルが指定されていません（?file=xxx が必要です）";
+            document.getElementById('downloadLink').style.pointerEvents = "none"; // クリック無効化
+        } else {
+            // 2. 変数を使ってファイル名とGitHubのURLを組み立て
+            const filename = `就業報告書${file}_9月.json`;
+            const targetUrl = `https://ToshiyukiIwamiya.github.io/MSReports/${filename}`;
+
+            const anchor = document.getElementById('downloadLink');
+
+            // 3. クリックされた時のダウンロード処理（別ドメイン対策のBlob変換）
+            anchor.addEventListener('click', async (e) => {
+                e.preventDefault(); // 通常の画面遷移をキャンセル
+                
+                // ボタンのテキストを一時的に変更（ユーザーへの安心感のため）
+                const originalText = anchor.textContent;
+                anchor.textContent = "ダウンロード中...";
+
+                try {
+                    // GitHub PagesからJSONファイルを取得
+                    const response = await fetch(targetUrl);
+                    if (!response.ok) throw new Error('ファイルが見つからないか、アクセスできませんでした。');
+                    
+                    // データをBlob（塊）に変換して、ブラウザに保存を強制させる
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    // 一時的なダウンロード用リンクを作って実行
+                    const tempAnchor = document.createElement('a');
+                    tempAnchor.href = blobUrl;
+                    tempAnchor.download = filename; // ここで指定したファイル名で保存される
+                    tempAnchor.click();
+
+                    // メモリ解放
+                    URL.revokeObjectURL(blobUrl);
+                } catch (error) {
+                    console.error('ダウンロードエラー:', error);
+                    alert(`ファイルのダウンロードに失敗しました。\nURL: ${targetUrl}`);
+                } finally {
+                    anchor.textContent = originalText;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
