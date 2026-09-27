@@ -319,11 +319,11 @@
                     </div>
 
                     <div class="flex items-center justify-between" id="row-allocation-2">
-                        <input type="text" id="item-name-2" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="数値2" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <input type="text" id="item-name-2" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="件数2" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
                         <div class="flex items-center gap-1">
                             <input type="text" id="p2-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this)">
                             <span class="shrink-0 text-xs">円×</span>
-                            <input type="text" id="p2-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="様式2の数値2合計と連動">
+                            <input type="text" id="p2-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="様式2の件数2合計と連動">
                             <span class="shrink-0 text-xs">＝</span>
                             <input type="text" id="p2-total" class="border-b border-gray-400 w-14 text-right font-medium shrink calc-total text-xs" readonly placeholder="0">
                             <span class="shrink-0 text-xs w-4 text-left">円</span>
@@ -585,13 +585,13 @@
                 if (evalTypeSelect1) evalTypeSelect1.value = matchedOption;
                 if (evalTypeSelect2) evalTypeSelect2.value = matchedOption;
             } else if (format === 2) {
-                const name2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '数値2';
+                const name2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '件数2';
                 const h1_1 = document.getElementById('f2-h1-col1');
                 const h2_1 = document.getElementById('f2-h2-col1');
                 const h1_2 = document.getElementById('f2-h1-col2');
                 const h2_2 = document.getElementById('f2-h2-col2');
-                if (h1_1) h1_1.value = itemName1 || '戸建て';
-                if (h2_1) h2_1.value = itemName1 || '戸建て';
+                if (h1_1) h1_1.value = itemName1 || '件数1';
+                if (h2_1) h2_1.value = itemName1 || '件数1';
                 if (h1_2) h1_2.value = name2;
                 if (h2_2) h2_2.value = name2;
             } else if (format === 3) {
@@ -1008,14 +1008,14 @@
 
             const itemName1Input = document.getElementById('item-name-1');
             if (itemName1Input && !document.getElementById('is-locked-checkbox').checked) {
-                if (format === 2) itemName1Input.value = '戸建て';
+                if (format === 2) itemName1Input.value = '件数1';
                 else if (format === 3 || format === 4) {
-                    if (!itemName1Input.value || itemName1Input.value === '戸建て' || itemName1Input.value === '日数') {
+                    if (!itemName1Input.value || itemName1Input.value === '件数1' || itemName1Input.value === '日数') {
                         itemName1Input.value = '時間';
                     }
                 }
                 else if (format === 1) {
-                    if (!itemName1Input.value || itemName1Input.value === '戸建て' || itemName1Input.value === '時間') {
+                    if (!itemName1Input.value || itemName1Input.value === '件数1' || itemName1Input.value === '時間') {
                         itemName1Input.value = '日数';
                     }
                 }
@@ -1046,8 +1046,8 @@
                     </th>
                 `;
             } else if (format === 2) {
-                const currentName1 = itemName1Input ? itemName1Input.value : '戸建て';
-                const currentName2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '数値2';
+                const currentName1 = itemName1Input ? itemName1Input.value : '件数1';
+                const currentName2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '件数2';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
