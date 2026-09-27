@@ -1635,20 +1635,18 @@
             const subject = `【就業報告書】 ${year}年${month}月分 (${sender})`;
 
             const body = 
-`公益社団法人 町田市シルバー人材センター 宛
+`公益社団法人 町田市シルバー人材センター 御中
 
-以下の通り、就業報告書の内容を送信いたします。
+添付にPDFファイルの通り、就業報告書を送信いたします。
 
 ----------------------------------
 ■ 会員情報: ${sender}
 ■ 対象年月: ${year}年 ${month}月分
 ■ 契約番号: ${contractNo}
-■ 様式番号: 様式${format}
-■ 実績合計: ${grandEval}
 ■ 請求合計: ${grandTotal} 円
 ----------------------------------
 
-※保存したPDFファイルを添付してから送信してください。`;
+`;
 
             const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             window.location.href = mailtoUrl;
