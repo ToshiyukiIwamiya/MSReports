@@ -1479,7 +1479,7 @@
             const hours = padZero(now.getHours());
             const minutes = padZero(now.getMinutes());
         
-            const filename = `就業報告書${contractNo}_${month}月_${year}${mon}${day}${hours}${minutes}.json`;
+            const filename = `就業報告書${contractNo}_${month}月.json`;
         
             // File System Access API がサポートされているか確認
             if ('showSaveFilePicker' in window) {
