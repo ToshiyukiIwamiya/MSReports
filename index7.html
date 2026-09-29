@@ -465,27 +465,26 @@
                     }
 
         // 4. JSONデータを解析してオブジェクトに変換
-        //          const data = response.json();
-        //          alert('jsonを読み込みました。');
+                    const data = await response.json();
 
         // 5. 取得したデータを入力欄にセット
-        //          alert(`contractTitle=${data.contractTitle}の入力が完了しました。`);
-        //          restoreFormData(data)
-        //          alert(`就業報告書${dataID}.jsonの入力が完了しました。`);
+                    alert(`contractTitle=${data.contractTitle}の入力が完了しました。`);
+                    restoreFormData(data)
+                    alert(`就業報告書${dataID}.jsonの入力が完了しました。`);
         //          console.log('データの自動入力が完了しました。');
 
                     // データをBlob（塊）に変換して、ブラウザに保存を強制させる
-                    const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
+        //          const blob = await response.blob();
+        //          const blobUrl = URL.createObjectURL(blob);
                     
                     // 一時的なダウンロード用リンクを作って実行
-                    const tempAnchor = document.createElement('a');
-                    tempAnchor.href = blobUrl;
-                    tempAnchor.download = filename; // ここで指定したファイル名で保存される
-                    tempAnchor.click();
+        //          const tempAnchor = document.createElement('a');
+        //          tempAnchor.href = blobUrl;
+        //          tempAnchor.download = filename; // ここで指定したファイル名で保存される
+        //          tempAnchor.click();
 
                     // メモリ解放
-                    URL.revokeObjectURL(blobUrl);
+        //          URL.revokeObjectURL(blobUrl);
                 } catch (error) {
                     console.error('エラーが発生しました:', error);
                     alert(`${response.status}の読み込みに失敗しました。`);
