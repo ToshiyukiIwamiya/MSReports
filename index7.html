@@ -445,6 +445,7 @@
         // 1. 画面が読み込まれたら実行
         window.addEventListener('DOMContentLoaded', async () => {
             
+            initReport();
         // 2. URLからパラメータ（?dataID=1000）を取得
             const urlParams = new URLSearchParams(window.location.search);
             const dataID = urlParams.get('dataID');
@@ -457,8 +458,6 @@
         // 3. 対応するJSONファイルをサーバからダウンロード（取得）
                     // 例: dataID=1000 なら "dataID1000.json" を取得しにいきます
                     const response = await fetch(targetUrl);
-                    alert('データを読み込みました。');
-
         // ファイルが見つからないなどのエラーハンドリング
                     if (!response.ok) {
                         throw new Error(`ファイル（就業報告書${dataID}.json）が見つかりません`);
@@ -472,26 +471,11 @@
                     if (!data) alert('データがありません。');
                     restoreFormData(data)
                     alert(`就業報告書${dataID}.jsonの入力が完了しました。`);
-        //          console.log('データの自動入力が完了しました。');
-
-                    // データをBlob（塊）に変換して、ブラウザに保存を強制させる
-        //          const blob = await response.blob();
-        //          const blobUrl = URL.createObjectURL(blob);
-                    
-                    // 一時的なダウンロード用リンクを作って実行
-        //          const tempAnchor = document.createElement('a');
-        //          tempAnchor.href = blobUrl;
-        //          tempAnchor.download = filename; // ここで指定したファイル名で保存される
-        //          tempAnchor.click();
-
-                    // メモリ解放
-        //          URL.revokeObjectURL(blobUrl);
                 } catch (error) {
                     console.error('エラーが発生しました:', error);
                     alert(`${response.status}の読み込みに失敗しました。`);
                 }
             }
-            initReport();
         });
 
         function initReport() {
