@@ -465,18 +465,16 @@
                     }
 
         // 4. JSONデータを解析してオブジェクトに変換
-                    const text = response.text();
-                    alert('textを読み込みました。');
-                    const json = JSON.parse(text);
+                    const text = response.json();
                     alert('jsonを読み込みました。');
 
         // 5. 取得したデータを入力欄にセット
-                    restoreFormData(json)
+                    restoreFormData(data)
                     console.log('データの自動入力が完了しました。');
 
                 } catch (error) {
                     console.error('エラーが発生しました:', error);
-                    alert(`https://ToshiyukiIwamiya.github.io/MSReports/${filename}の読み込みに失敗しました。`);
+                    alert(`${response.status}の読み込みに失敗しました。`);
                 }
             }
             initReport();
