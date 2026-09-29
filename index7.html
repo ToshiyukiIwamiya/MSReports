@@ -462,10 +462,11 @@
                     }
 
         // 4. JSONデータを解析してオブジェクトに変換
-                    const data = await response.json();
+                    const text = response.text();
+                    const json = JSON.parse(text);
 
         // 5. 取得したデータを入力欄にセット
-                    restoreFormData(data)
+                    restoreFormData(json)
                     console.log('データの自動入力が完了しました。');
 
                 } catch (error) {
