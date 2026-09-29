@@ -448,13 +448,15 @@
         // 2. URLからパラメータ（?dataID=1000）を取得
             const urlParams = new URLSearchParams(window.location.search);
             const dataID = urlParams.get('dataID');
+            const filename = `就業報告書${dataID}.json`;
+            const targetUrl = `https://ToshiyukiIwamiya.github.io/MSReports/${filename}`;
 
         // URLに dataID が含まれている場合のみ処理を実行
             if (dataID) {
                 try {
         // 3. 対応するJSONファイルをサーバからダウンロード（取得）
                     // 例: dataID=1000 なら "dataID1000.json" を取得しにいきます
-                    const response = await fetch(`就業報告書${dataID}.json`);
+                    const response = await fetch(targetUrl);
                     alert('データの読み込みました。');
 
         // ファイルが見つからないなどのエラーハンドリング
