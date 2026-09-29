@@ -442,38 +442,25 @@
         let isListening = false;
         let lastFocusedElement = null; // 最後にフォーカスされたinput/textarea要素を記録
 
-        // 1. 画面が読み込まれたら実行
         window.addEventListener('DOMContentLoaded', async () => {
-            
             initReport();
-        // 2. URLからパラメータ（?dataID=1000）を取得
+
+        // URLからパラメータ（?dataID=1000）を取得
             const urlParams = new URLSearchParams(window.location.search);
             const dataID = urlParams.get('dataID');
             const filename = `就業報告書${dataID}.json`;
             const targetUrl = `https://ToshiyukiIwamiya.github.io/MSReports/${filename}`;
 
-        // URLに dataID が含まれている場合のみ処理を実行
             if (dataID) {
                 try {
-        // 3. 対応するJSONファイルをサーバからダウンロード（取得）
-                    // 例: dataID=1000 なら "dataID1000.json" を取得しにいきます
                     const response = await fetch(targetUrl);
-        // ファイルが見つからないなどのエラーハンドリング
                     if (!response.ok) {
                         throw new Error(`ファイル（就業報告書${dataID}.json）が見つかりません`);
                     }
-
-        // 4. JSONデータを解析してオブジェクトに変換
                     const data = await response.json();
-
-        // 5. 取得したデータを入力欄にセット
-                    alert(`contractTitle=${data.contractTitle}の入力が完了しました。`);
-                    if (!data) alert('データがありません。');
                     restoreFormData(data)
-                    alert(`就業報告書${dataID}.jsonの入力が完了しました。`);
                 } catch (error) {
                     console.error('エラーが発生しました:', error);
-                    alert(`${response.status}の読み込みに失敗しました。`);
                 }
             }
         });
