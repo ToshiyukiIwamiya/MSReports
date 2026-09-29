@@ -457,7 +457,7 @@
         // 3. 対応するJSONファイルをサーバからダウンロード（取得）
                     // 例: dataID=1000 なら "dataID1000.json" を取得しにいきます
                     const response = await fetch(targetUrl);
-                    alert('データの読み込みました。');
+                    alert('データを読み込みました。');
 
         // ファイルが見つからないなどのエラーハンドリング
                     if (!response.ok) {
@@ -466,7 +466,9 @@
 
         // 4. JSONデータを解析してオブジェクトに変換
                     const text = response.text();
+                    alert('textを読み込みました。');
                     const json = JSON.parse(text);
+                    alert('jsonを読み込みました。');
 
         // 5. 取得したデータを入力欄にセット
                     restoreFormData(json)
