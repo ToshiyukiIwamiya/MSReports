@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>就業報告書初期データダウンロード</title>
+    <!-- 1. Supabaseのクライアントライブラリを正しく読み込む -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- 表示させないためのリンク。JSで動的に設定します -->
+    <a href="#" id="downloadLink" class="force-download">就業報告書のダウンロード</a>
+    
+    <script>
+        // URLの「?」以降のパラメータを解析する
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 「dataID」というパラメータの値を取得
+        const dataID = urlParams.get('dataID'); 
+        const SUPABASE_URL = "https://ymchwhuubdvokkkyflkb.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_SbcqGr8rFgkGWhFwoSwNGA_xFJjdMtN";
+
+        // Supabaseクライアントの初期化（CDN版は supabase.createClient を使用）
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // パラメータが空だった場合の対策（エラー防止）
+        if (!dataID) {
+            document.getElementById('downloadLink').textContent = "エラー：ファイルが指定されていません（?dataID=xxx が必要です）";
+            document.getElementById('downloadLink').style.pointerEvents = "none"; // クリック無効化
+        } else {
+            setupDownload(dataID);
+        }
+
+        function setupDownload(dataID) {
+            const bucketName = "MSReports";
+            const filename = `Report${dataID}.json`;
+
+            const anchor = document.getElementById('downloadLink');
+
+            // クリックされた時のダウンロード処理
+            anchor.addEventListener('click', async (e) => {
+                e.preventDefault(); // 通常の画面遷移をキャンセル
+                
+                // ボタンのテキストを一時的に変更（ユーザーへの安心感のため）
+                const originalText = anchor.textContent;
+                anchor.textContent = "ダウンロード中...";
+
+                try {
+                    // Supabase Storageからファイルをダウンロード (Blobとして取得される)
+                    const { data, error } = await supabaseClient
+                        .storage
+                        .from(bucketName)
+                        .download(filename); // 変数名ミス（fileName -> filename）を修正
+                  
+                    if (error) throw error;
+                  
+                    // 3. ブラウザでファイルをダウンロードさせるための処理を追加
+                    // Blobから一時的なURLを生成
+                    const blobUrl = window.URL.createObjectURL(data);
+                    
+                    // 一時的な<a>要素を作成して自動クリックさせることでダウンロードを実行
+                    const tempLink = document.createElement('a');
+                    tempLink.href = blobUrl;
+                    tempLink.download = filename; // 保存されるファイル名を指定
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    
+                    // 使用後に要素とオブジェクトURLをクリーンアップ
+                    document.body.removeChild(tempLink);
+                    window.URL.revokeObjectURL(blobUrl);
+
+                    console.log("ダウンロード成功:", filename);
+              
+                } catch (error) {
+                    console.error("データの取得に失敗しました:", error.message);
+                    alert("ファイルのダウンロードに失敗しました: " + error.message);
+                } finally {
+                    anchor.textContent = originalText;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
