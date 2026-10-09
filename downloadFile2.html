@@ -74,6 +74,7 @@
                 } catch (error) {
                     console.error("詳細エラー:", error);
                     alert("ファイルのダウンロードに失敗しました: " + (error.message || JSON.stringify(error)));
+                    alert("ファイルのダウンロードに失敗しました: " + (filename));
                 } finally {
                     anchor.textContent = originalText;
                 }
