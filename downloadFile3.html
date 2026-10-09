@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>テストダウンロード</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <p id="status">接続中...</p>
+
+    <script>
+        const SUPABASE_URL = "https://ymchwhuubdvokkkyflkb.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_SbcqGr8rFgkGWhFwoSwNGA_xFJjdMtN";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function testDownload() {
+            const statusEl = document.getElementById('status');
+            try {
+                statusEl.textContent = "ファイルをダウンロード中...";
+                
+                const { data, error } = await supabaseClient
+                    .storage
+                    .from("MSReports")
+                    .download("Report26011880.json");
+
+                if (error) throw error;
+
+                // 成功したら自動保存
+                const blobUrl = window.URL.createObjectURL(data);
+                const tempLink = document.createElement('a');
+                tempLink.href = blobUrl;
+                tempLink.download = "Report26011880.json";
+                document.body.appendChild(tempLink);
+                tempLink.click();
+                document.body.removeChild(tempLink);
+                window.URL.revokeObjectURL(blobUrl);
+
+                statusEl.textContent = "ダウンロードが完了しました！";
+            } catch (err) {
+                console.error("詳細エラー:", err);
+                statusEl.textContent = "エラーが発生しました: " + (err.message || JSON.stringify(err));
+            }
+        }
+
+        testDownload();
+    </script>
+</body>
+</html>
