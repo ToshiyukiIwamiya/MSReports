@@ -72,8 +72,8 @@
                     console.log("ダウンロード成功:", filename);
               
                 } catch (error) {
-                    console.error("データの取得に失敗しました:", error.message);
-                    alert("ファイルのダウンロードに失敗しました: " + error.message);
+                    console.error("詳細エラー:", error);
+                    alert("ファイルのダウンロードに失敗しました: " + (error.message || JSON.stringify(error)));
                 } finally {
                     anchor.textContent = originalText;
                 }
