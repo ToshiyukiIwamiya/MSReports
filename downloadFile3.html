@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>テストダウンロード</title>
+    <title>テスト用ダウンロード</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -20,7 +20,7 @@
                 
                 const { data, error } = await supabaseClient
                     .storage
-                    .from("MSReports")
+                    .from("ms_reports")
                     .download("Report26011880.json");
 
                 if (error) throw error;
