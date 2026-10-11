@@ -1612,21 +1612,24 @@
             let memberNameOverride = null;
 
             for (let file of files) {
-                document.getElementById('debug-data-display').textContent += file.name + ', ';
-                try {
-                    const text = await file.text();
-                    const json = JSON.parse(text);
+                if (file.name === 'localID.json') {
+                    try {
+                        const text = await file.text();
+                        const json = JSON.parse(text);
 
-                    if (file.name === 'localID.json' || (json.memberNo !== undefined && json.memberName !== undefined && json.format === undefined)) {
-                document.getElementById('debug-data-display').textContent += file.name + ', ';
                         memberNoOverride = json.memberNo;
                         memberNameOverride = json.memberName;
                         localIdFoundMessage = "localID.json を正常に読み込み、会員情報を上書きしました！";
-                    } else {
-                        loadedReportData = json;
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
                     }
-                } catch (e) {
-                    console.error('JSON parse error:', e);
+                } else {
+                    try {
+                        const text = await file.text();
+                        loadedReportData = JSON.parse(text);
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                    }
                 }
             }
 
@@ -1634,7 +1637,7 @@
                 if (memberNoOverride && memberNameOverride) {
                     document.getElementById('member-no').value = memberNoOverride;
                     document.getElementById('member-name').value = memberNameOverride;
-                    alert(`結果: ${localIdFoundMessage}`);
+                    alert(`${localIdFoundMessage}`);
                     triggerAutoSave();
                     event.target.value = '';
                     return;
@@ -1648,7 +1651,7 @@
             if (memberNameOverride) loadedReportData.memberName = memberNameOverride;
 
             restoreFormData(loadedReportData);
-            alert(`JSONファイルのインポートに成功しました。\n結果: ${localIdFoundMessage}`);
+            alert(`JSONファイルのインポートに成功しました。\n${localIdFoundMessage}`);
             event.target.value = '';
             triggerAutoSave();
         }
