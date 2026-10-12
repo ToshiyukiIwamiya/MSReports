@@ -39,8 +39,8 @@
     "f3-eval-1": "7.25",
     "f3-start-17": "10:00",
     "f3-end-17": "15:00",
-    "f3-break-17": "0分",
-    "f3-eval-17": "5.00",
+    "f3-break-17": "30分",
+    "f3-eval-17": "4.50",
     "f3-start-2": "09:00",
     "f3-end-2": "15:00",
     "f3-break-2": "30分",
@@ -160,6 +160,6 @@
     "f3-col-total-1": "9:00",
     "f3-col-total-2": "17:00",
     "f3-col-total-3": "",
-    "grand-total-eval": "17.75"
+    "grand-total-eval": "17.25"
   }
 }
