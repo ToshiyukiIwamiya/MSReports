@@ -15,7 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- pdf-lib CDN (PDFへのファイル添付に使用) -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         @media print {
             @page {
@@ -257,7 +258,7 @@
                         【事務局記入欄】
                     </div>
                     <div class="flex-grow p-1">
-                        <textarea id="secretariat-memo" class="resize-none text-xs locked-target" oninput="triggerAutoSave()" placeholder=""></textarea>
+                        <textarea id="secretariat-memo" class="resize-none text-xs locked-target" oninput="triggerAutoSave()" onfocus="setActiveInput(this)" placeholder=""></textarea>
                     </div>
                 </div>
 
@@ -431,19 +432,27 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const dataID = urlParams.get('dataID');
-            const filename = `就業報告書${dataID}.json`;
-            const targetUrl = `https://ToshiyukiIwamiya.github.io/MSReports/${filename}`;
+                document.getElementById('debug-data-display').textContent = dataID;
 
             if (dataID) {
+                const filename = `Report${dataID}.json`;
+                const SUPABASE_URL = "https://ymchwhuubdvokkkyflkb.supabase.co";
+                const SUPABASE_KEY = "sb_publishable_SbcqGr8rFgkGWhFwoSwNGA_xFJjdMtN";
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 try {
-                    const response = await fetch(targetUrl);
-                    if (!response.ok) {
-                        throw new Error(`ファイル（就業報告書${dataID}.json）が見つかりません`);
-                    }
-                    const data = await response.json();
-                    restoreFormData(data);
+                    const { data, error } = await supabaseClient
+                        .storage
+                        .from("ms_reports")
+                        .download(filename);
+
+                    if (error) throw error;
+
+                    const text = await data.text();
+                document.getElementById('debug-data-display').textContent = filename;
+                    const json = JSON.parse(text);
+                    restoreFormData(json);
                 } catch (error) {
-                    console.error('エラーが発生しました:', error);
+                    console.error(`ファイル（就業報告書${dataID}.json）が見つかりません`, error);
                 }
             }
         });
@@ -1232,56 +1241,56 @@
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f1-text-${d1}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f1-eval-${d1}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid1 ? 'readonly style="background:transparent;"' : ''} onblur="formatInput(this)"></td>
+                        <td><input type="text" id="f1-text-${d1}" oninput="calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f1-eval-${d1}" class="text-center eval-input" oninput="calculateTotals()" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''} onblur="formatInput(this)"></td>
                         <td class="text-center font-bold bg-slate-50 col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f1-text-${d2}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td class="col-eval"><input type="text" id="f1-eval-${d2}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid2 ? 'readonly style="background:transparent;"' : ''} onblur="formatInput(this)"></td>
+                        <td><input type="text" id="f1-text-${d2}" oninput="calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td class="col-eval"><input type="text" id="f1-eval-${d2}" class="text-center eval-input" oninput="calculateTotals()" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''} onblur="formatInput(this)"></td>
                     `;
                 } else if (format === 2) {
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-num1-${d1}" class="text-center entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-num2-${d1}" class="text-center entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num1-${d1}" class="text-center entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num2-${d1}" class="text-center entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f2-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-num1-${d2}" class="text-center entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f2-num2-${d2}" class="text-center entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num1-${d2}" class="text-center entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f2-num2-${d2}" class="text-center entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f2-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
                     `;
                 } else if (format === 3) {
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-start-${d1}" placeholder="09:00" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-end-${d1}" placeholder="17:00" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-break-${d1}" placeholder="45分" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-start-${d1}" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-end-${d1}" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-break-${d1}" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f3-eval-${d1}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
                         <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f3-start-${d2}" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : 'placeholder="09:00" '}></td>
-                        <td><input type="text" id="f3-end-${d2}" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : 'placeholder="17:00" '}></td>
-                        <td><input type="text" id="f3-break-${d2}" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" ${!isValid2 ? 'readonly style="background:transparent;"' : 'placeholder="45分" '}></td>
+                        <td><input type="text" id="f3-start-${d2}" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-end-${d2}" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f3-break-${d2}" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f3-eval-${d2}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
                     `;
                 } else if (format === 4) {
                     tr.innerHTML = `
                         <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1 ? d1 : ''}</td>
                         <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1}" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start1-${d1}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end1-${d1}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start2-${d1}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end2-${d1}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start1-${d1}" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end1-${d1}" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start2-${d1}" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end2-${d1}" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f4-eval-${d1}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1 ? 'style="background:transparent;"' : ''}></td>
                         <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid2 ? d2 : ''}</td>
                         <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w2}" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start1-${d2}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end1-${d2}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-start2-${d2}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
-                        <td><input type="text" id="f4-end2-${d2}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start1-${d2}" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end1-${d2}" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-start2-${d2}" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
+                        <td><input type="text" id="f4-end2-${d2}" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid2 ? 'readonly style="background:transparent;"' : ''}></td>
                         <td class="col-eval"><input type="text" id="f4-eval-${d2}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid2 ? 'style="background:transparent;"' : ''}></td>
                     `;
                 }
@@ -1304,8 +1313,8 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f1-text-${d1_16}" oninput="calculateTotals(); triggerAutoSave();" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td class="col-eval"><input type="text" id="f1-eval-${d1_16}" class="text-center eval-input" oninput="calculateTotals()" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f1-text-${d1_16}" oninput="calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td class="col-eval"><input type="text" id="f1-eval-${d1_16}" class="text-center eval-input" oninput="calculateTotals()" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100">合計</td>
                     <td><input type="text" readonly style="background:transparent;"></td>
                     <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
@@ -1314,8 +1323,8 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f2-num1-${d1_16}" class="text-center entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f2-num2-${d1_16}" class="text-center entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f2-num1-${d1_16}" class="text-center entry-f2-c1" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f2-num2-${d1_16}" class="text-center entry-f2-c2" oninput="calculateTotals(); triggerAutoSave();" onblur="formatInput(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td class="col-eval"><input type="text" id="f2-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
                     <td><input type="text" id="f2-col-total-1" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
@@ -1326,9 +1335,9 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-start-${d1_16}" placeholder="09:00" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-end-${d1_16}" placeholder="17:00" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f3-break-${d1_16}" placeholder="45分" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-start-${d1_16}" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-end-${d1_16}" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f3-break-${d1_16}" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td class="col-eval"><input type="text" id="f3-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
                     <td><input type="text" id="f3-col-total-1" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
@@ -1340,10 +1349,10 @@
                 tr16.innerHTML = `
                     <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid1_16 ? d1_16 : ''}</td>
                     <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w1_16}" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-start1-${d1_16}" placeholder="09:00" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-end1-${d1_16}" placeholder="12:00" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-start2-${d1_16}" placeholder="13:00" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
-                    <td><input type="text" id="f4-end2-${d1_16}" placeholder="17:00" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-start1-${d1_16}" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-end1-${d1_16}" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-start2-${d1_16}" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
+                    <td><input type="text" id="f4-end2-${d1_16}" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this)" onfocus="setActiveInput(this)" ${!isValid1_16 ? 'readonly style="background:transparent;"' : ''}></td>
                     <td class="col-eval"><input type="text" id="f4-eval-${d1_16}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid1_16 ? 'style="background:transparent;"' : ''}></td>
                     <td colspan="2" class="text-center font-bold bg-slate-100 text-[10px]">合計</td>
                     <td><input type="text" id="f4-col-total-1" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
@@ -1355,6 +1364,12 @@
             }
 
             calculateTotals();
+        }
+
+        // Active Input Tracking for Voice Input
+        let activeInput = null;
+        function setActiveInput(el) {
+            activeInput = el;
         }
 
         function extractNumberAndReplace(inputElement) {
@@ -1894,61 +1909,59 @@
 
         function parseDayWord(text) {
             const map = {
-                'ついたち': 1, '一日': 1,
-                'ふつか': 2, '二日': 2,
-                'みっか': 3, '三日': 3,
-                'よっか': 4, '四日': 4,
-                'いつか': 5, '五日': 5,
-                'むいか': 6, '六日': 6,
-                'なのか': 7, '七日': 7,
-                'ようか': 8, '八日': 8,
-                'ここのか': 9, '九日': 9,
-                'とおか': 10, '十日': 10,
-                'じゅういちにち': 11, 'じゅうににち': 12, 'じゅうさんにち': 13, 'じゅうよっか': 14, 'じゅうごにち': 15,
-                'じゅうろくにち': 16, '十六日': 16,
-                'じゅうしちにち': 17, 'じゅうはちにち': 18, 'じゅうくにち': 19, 'はつか': 20, '二十日': 20,
-                'にじゅういちにち': 21, 'にじゅうににち': 22, 'にじゅうさんにち': 23, 'にじゅうよっか': 24, 'にじゅうごにち': 25,
-                'にじゅうろくにち': 26, 'にじゅうしちにち': 27, 'にじゅうはちにち': 28, 'にじゅうくにち': 29, 'さんじゅうにち': 30, 'さんじゅういちにち': 31
+                'ついたち': '1日', '一日': '1日',
+                'ふつか': '2日', '二日': '2日',
+                'みっか': '3日', '三日': '3日',
+                'よっか': '4日', '四日': '4日',
+                'いつか': '5日', '五日': '5日',
+                'むいか': '6日', '六日': '6日',
+                'なのか': '7日', '七日': '7日',
+                'ようか': '8日', '八日': '8日',
+                'ここのか': '9日', '九日': '9日',
+                'とおか': '10日', '十日': '10日',
+                'じゅういちにち': '11日', 'じゅうににち': '12日', 'じゅうさんにち': '13日', 
+                'じゅうよっか': '14日', 'じゅうごにち': '15日', 'じゅうろくにち': '16日', '十六日': '16日',
+                'じゅうしちにち': '17日', 'じゅうはちにち': '18日', 'じゅうくにち': '19日', 
+                'はつか':  '20日', '二十日': '20日', 'にじゅういちにち': '21日', 'にじゅうににち': '22日', 
+                'にじゅうさんにち': '23日', 'にじゅうよっか': '24日', 'にじゅうごにち': '25日',
+                'にじゅうろくにち': '26日', 'にじゅうしちにち': '27日', 'にじゅうはちにち': '28日', 
+                'にじゅうくにち': '29日', 'さんじゅうにち': '30日', 'さんじゅういちにち': '31日'
             };
             for (let key in map) {
-                if (text.includes(key)) return map[key];
+                if (text.includes(key)) text = text.replace(key, map[key]);
             }
             const today = new Date();
-            let md = '';
-            if (text.includes('きょう') || text.includes('今日')) {
-                md = String(today.getDate());
+            text = text.replace('きょう', String(today.getDate()) + '日').replace('今日', String(today.getDate()) + '日')
+            .replace('きのう', String(today.getDate()-1) + '日').replace('昨日', String(today.getDate()-1) + '日')
+            .replace('おととい', String(today.getDate()-2) + '日').replace('一昨日', String(today.getDate()-2) + '日')
+            .replace('あす', String(today.getDate()+1) + '日').replace('明日', String(today.getDate()+1) + '日')
+            .replace('あさって', String(today.getDate()+2) + '日').replace('明後日', String(today.getDate()+2) + '日');
+            text = text.replace('月曜日', String(today.getDate()-today.getDay()+1) + '日')
+            .replace('月曜', String(today.getDate()-today.getDay()+1) + '日')
+            .replace('火曜日', String(today.getDate()-today.getDay()+2) + '日')
+            .replace('火曜', String(today.getDate()-today.getDay()+2) + '日')
+            .replace('水曜日', String(today.getDate()-today.getDay()+3) + '日')
+            .replace('水曜', String(today.getDate()-today.getDay()+3) + '日')
+            .replace('木曜日', String(today.getDate()-today.getDay()+4) + '日')
+            .replace('木曜', String(today.getDate()-today.getDay()+4) + '日')
+            .replace('金曜日', String(today.getDate()-today.getDay()+5) + '日')
+            .replace('金曜', String(today.getDate()-today.getDay()+5) + '日');
+
+            let regex = /\s*(\d{1,2})\s*日/g;
+            let match;
+            let results = [];
+
+            while ((match = regex.exec(text)) !== null) {
+                let n1 = parseInt(match[1], 10);
+                if (n1 >= 1 && n1 <= 31) {
+                    results.push({
+                        index: match.index,
+                        num: n1
+                    });
+                }
             }
-            else if (text.includes('きのう') || text.includes('昨日')) {
-                md = String(today.getDate()-1);
-            }
-            else if (text.includes('おとtoi') || text.includes('一昨日')) {
-                md = String(today.getDate()-2);
-            }
-            else if (text.includes('あす') || text.includes('あした') || text.includes('明日')) {
-                md = String(today.getDate()+1);
-            }
-            else if (text.includes('あさって') || text.includes('明後日')) {
-                md = String(today.getDate()+2);
-            }
-            else if (text.includes('月曜')) {
-                md = String(today.getDate()-today.getDay()+1);
-            }
-            else if (text.includes('火曜')) {
-                md = String(today.getDate()-today.getDay()+2);
-            }
-            else if (text.includes('水曜')) {
-                md = String(today.getDate()-today.getDay()+3);
-            }
-            else if (text.includes('木曜')) {
-                md = String(today.getDate()-today.getDay()+4);
-            }
-            else if (text.includes('金曜')) {
-                md = String(today.getDate()-today.getDay()+5);
-            }
-            if (md >= 1 && md <= 31) return md;
-            let m = text.match(/(\d{1,2})\s*日/);
-            if (m) return m[1];
-            return null;
+            results.sort((a, b) => a.index - b.index);
+            return results;
         }
 
         function extractNumberFromTranscript(text) {
@@ -1971,6 +1984,7 @@
 
             while ((match = regex.exec(t)) !== null) {
                 let n1 = parseInt(match[1], 10);
+                document.getElementById('debug-data-display').textContent += n1;
                 results.push({
                     index: match.index,
                     num: n1
@@ -1987,7 +2001,8 @@
             text = text.replace(/千/g, '1').replace(/百/g, '1').replace(/十/g, '1')
               .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
               .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
-              .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9');
+              .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9')
+              .replace(/半/g, '30分');
 
             while ((match = regex.exec(text)) !== null) {
                 let h = parseInt(match[1], 10);
@@ -2010,58 +2025,147 @@
         }
 
         function processVoiceCommand(transcript) {
-            const day = parseDayWord(transcript);
-            if (!day) return;
+            const results = parseDayWord(transcript);
+            const day = results[0];
 
             const format = parseInt(document.getElementById('report-format').value);
-            if (format === 2) {
-                const numbers = extractNumberssFromTranscript(transcript);
-                if (numbers.length >= 1) {
-                    const sEl = document.getElementById(`f2-num1-${day}`);
-                    if (sEl) sEl.value = numbers[0];
+            if (format === 1) {
+                const evalType = document.getElementById('f1-eval-type-1');
+                if (day) {
+                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                        document.getElementById(`f1-text-${day.num}`).value = '';
+                        if (evalType.value === '件数' || evalType.value === '配分金') {
+                            document.getElementById(`f1-eval-${day.num}`).value = '';
+                        }
+                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
+                        const day2 = results[1];
+
+                        document.getElementById(`f1-text-${day.num}`).value 
+                            = document.getElementById(`f1-text-${day2.num}`).value;
+                        document.getElementById(`f1-eval-${day.num}`).value 
+                            = document.getElementById(`f1-eval-${day2.num}`).value;
+                    } else {
+                        const el = document.getElementById(`f1-text-${day.num}`);
+                        activeInput = el;
+                    }
+                } else {
+                    if (evalType.value === '件数' || evalType.value === '配分金') {
+                        const numbers = extractNumbersFromTranscript(transcript);
+                        activeInput.value = numbers[0].num;
+                    }
                 }
-                if (numbers.length >= 2) {
-                    const eEl = document.getElementById(`f2-num2-${day}`);
-                    if (eEl) eEl.value = numbers[1];
+            }
+            if (format === 2) {
+                if (day) {
+                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                        document.getElementById(`f2-num1-${day.num}`).value = '';
+                        document.getElementById(`f2-num2-${day.num}`).value = '';
+                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
+                        const day2 = results[1];
+
+                        document.getElementById(`f2-num1-${day.num}`).value 
+                            = document.getElementById(`f2-num1-${day2.num}`).value;
+                        document.getElementById(`f2-num2-${day.num}`).value 
+                            = document.getElementById(`f2-num2-${day2.num}`).value;
+                    } else {
+                        const numbers = extractNumbersFromTranscript(transcript);
+                        document.getElementById('debug-data-display').textContent += numbers.length + ' ';
+                        if (numbers.length >= 1) {
+                            const sEl1 = document.getElementById(`f2-num1-${day.num}`);
+                            if (sEl1) sEl1.value = numbers[0].num;
+                        }
+                        if (numbers.length >= 2) {
+                            const eEl2 = document.getElementById(`f2-num2-${day.num}`);
+                            if (eEl2) eEl2.value = numbers[1].num;
+                        }
+                    }
+                } else {
+                    const numbers = extractNumbersFromTranscript(transcript);
+                    activeInput.value = numbers[0];
                 }
                 calculateTotals();
                 triggerAutoSave();
             }
-            if (format === 3) {
+            else if (format === 3) {
                 const times = extractTimesFromTranscript(transcript);
                 const minutes = extractMinutesFromTranscript(transcript);
-                if (times.length >= 1) {
-                    const sEl = document.getElementById(`f3-start-${day}`);
-                    if (sEl) sEl.value = times[0];
-                }
-                if (times.length >= 2) {
-                    const eEl = document.getElementById(`f3-end-${day}`);
-                    if (eEl) eEl.value = times[1];
-                }
-                if (minutes.length >= 1) {
-                    const sEl = document.getElementById(`f3-break-${day}`);
-                    if (sEl) sEl.value = minutes[0];
+                if (day) {
+                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                        document.getElementById(`f3-start-${day.num}`).value = '';
+                        document.getElementById(`f3-end-${day.num}`).value = '';
+                        document.getElementById(`f3-break-${day.num}`).value = '';
+                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
+                        const day2 = results[1];
+
+                        document.getElementById(`f3-start-${day.num}`).value 
+                            = document.getElementById(`f3-start-${day2.num}`).value;
+                        document.getElementById(`f3-end-${day.num}`).value 
+                            = document.getElementById(`f3-end-${day2.num}`).value;
+                        document.getElementById(`f3-break-${day.num}`).value 
+                            = document.getElementById(`f3-break-${day2.num}`).value;
+                    } else {
+                        if (times.length >= 1) {
+                            const sEl = document.getElementById(`f3-start-${day.num}`);
+                            if (sEl) sEl.value = times[0];
+                        }
+                        if (times.length >= 2) {
+                            const eEl = document.getElementById(`f3-end-${day.num}`);
+                            if (eEl) eEl.value = times[1];
+                        }
+                        if (minutes.length >= 1) {
+                            const sEl = document.getElementById(`f3-break-${day.num}`);
+                            if (sEl) sEl.value = minutes[0];
+                        }
+                    }
+                } else {
+                    if (activeInput.id.includes('start') || activeInput.id.includes('end')) {
+                        activeInput.value = times[0];
+                    } else {
+                        activeInput.value = minutes[0];
+                    }
                 }
                 calculateTotals();
                 triggerAutoSave();
             }
-            if (format === 4) {
-                const times = extractTimesFromTranscript(transcript);
-                if (times.length >= 1) {
-                    const sEl = document.getElementById(`f4-start1-${day}`);
-                    if (sEl) sEl.value = times[0];
-                }
-                if (times.length >= 2) {
-                    const eEl = document.getElementById(`f4-end1-${day}`);
-                    if (eEl) eEl.value = times[1];
-                }
-                if (times.length >= 3) {
-                    const sEl = document.getElementById(`f4-start2-${day}`);
-                    if (sEl) sEl.value = times[2];
-                }
-                if (times.length >= 4) {
-                    const eEl = document.getElementById(`f4-end2-${day}`);
-                    if (eEl) eEl.value = times[3];
+            else if (format === 4) {
+                if (day) {
+                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                        document.getElementById(`f4-start1-${day.num}`).value = '';
+                        document.getElementById(`f4-end1-${day.num}`).value = '';
+                        document.getElementById(`f4-start2-${day.num}`).value = '';
+                        document.getElementById(`f4-end2-${day.num}`).value = '';
+                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
+                        const day2 = results[1];
+
+                        document.getElementById(`f4-start1-${day.num}`).value 
+                            = document.getElementById(`f4-start1-${day2.num}`).value;
+                        document.getElementById(`f4-end1-${day.num}`).value 
+                            = document.getElementById(`f4-end1-${day2.num}`).value;
+                        document.getElementById(`f4-start2-${day.num}`).value 
+                            = document.getElementById(`f4-start2-${day2.num}`).value;
+                        document.getElementById(`f4-end2-${day.num}`).value 
+                            = document.getElementById(`f4-end2-${day2.num}`).value;
+                    } else {
+                        const times = extractTimesFromTranscript(transcript);
+                        if (times.length >= 1) {
+                            const sEl = document.getElementById(`f4-start1-${day.num}`);
+                            if (sEl) sEl.value = times[0];
+                        }
+                        if (times.length >= 2) {
+                            const eEl = document.getElementById(`f4-end1-${day.num}`);
+                            if (eEl) eEl.value = times[1];
+                        }
+                        if (times.length >= 3) {
+                            const sEl = document.getElementById(`f4-start2-${day.num}`);
+                            if (sEl) sEl.value = times[2];
+                        }
+                        if (times.length >= 4) {
+                            const eEl = document.getElementById(`f4-end2-${day.num}`);
+                            if (eEl) eEl.value = times[3];
+                        }
+                    }
+                } else {
+                     activeInput.value = times[0];
                 }
                 calculateTotals();
                 triggerAutoSave();
