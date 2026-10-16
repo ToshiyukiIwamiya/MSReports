@@ -2071,6 +2071,8 @@
                         if (numbers.length >= 1) {
                             const sEl1 = document.getElementById(`f2-num1-${day.num}`);
                             if (sEl1) sEl1.value = numbers[0].num;
+                            const el = document.getElementById(`f2-num2-${day.num}`);
+                            activeInput = el;
                         }
                         if (numbers.length >= 2) {
                             const eEl2 = document.getElementById(`f2-num2-${day.num}`);
@@ -2105,10 +2107,14 @@
                         if (times.length >= 1) {
                             const sEl = document.getElementById(`f3-start-${day.num}`);
                             if (sEl) sEl.value = times[0];
+                            const el = document.getElementById(`f3-end-${day.num}`);
+                            activeInput = el;
                         }
                         if (times.length >= 2) {
                             const eEl = document.getElementById(`f3-end-${day.num}`);
                             if (eEl) eEl.value = times[1];
+                            const el = document.getElementById(`f3-break-${day.num}`);
+                            activeInput = el;
                         }
                         if (minutes.length >= 1) {
                             const sEl = document.getElementById(`f3-break-${day.num}`);
@@ -2148,14 +2154,20 @@
                         if (times.length >= 1) {
                             const sEl = document.getElementById(`f4-start1-${day.num}`);
                             if (sEl) sEl.value = times[0];
+                            const el = document.getElementById(`f4-end1-${day.num}`);
+                            activeInput = el;
                         }
                         if (times.length >= 2) {
                             const eEl = document.getElementById(`f4-end1-${day.num}`);
                             if (eEl) eEl.value = times[1];
+                            const el = document.getElementById(`f4-start2-${day.num}`);
+                            activeInput = el;
                         }
                         if (times.length >= 3) {
                             const sEl = document.getElementById(`f4-start2-${day.num}`);
                             if (sEl) sEl.value = times[2];
+                            const el = document.getElementById(`f2-end2-${day.num}`);
+                            activeInput = el;
                         }
                         if (times.length >= 4) {
                             const eEl = document.getElementById(`f4-end2-${day.num}`);
