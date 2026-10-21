@@ -450,6 +450,7 @@
                 document.getElementById('debug-data-display').textContent = filename;
                     const json = JSON.parse(text);
                     restoreFormData(json);
+                    saveToLocalStorage(false)
                 } catch (error) {
                     console.error(`ファイル（就業報告書${dataID}.json）が見つかりません`, error);
                 }
