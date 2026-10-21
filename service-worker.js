@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logical-quest-v2';
+const CACHE_NAME = 'logical-quest-v3';
 // キャッシュするファイルのリスト
 // service-worker.jsファイルからの相対パスで指定
 const urlsToCache = [
