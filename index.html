@@ -420,24 +420,141 @@
         </div>
     </div>
 
+    <!-- Modal Dialog (本人確認ダイアログ) -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-check"></i>
+                    ダウンロード前の本人確認
+                </h3>
+                <button id="btn-close-modal" class="text-indigo-200 hover:text-white transition text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <p id="modal-desc" class="text-xs text-slate-600 leading-relaxed">
+                    ファイルをダウンロードする前に、あなたのユーザーIDと氏名を入力してください。情報はブラウザに保存されます。
+                </p>
+
+                <!-- Input Fields -->
+                <div class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                        <label for="modal-user-id" class="block text-xs font-bold text-slate-700 mb-1">
+                            ユーザーID <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="modal-user-id" placeholder="例: USR-10023" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                    </div>
+
+                    <div>
+                        <label for="modal-user-name" class="block text-xs font-bold text-slate-700 mb-1">
+                            氏名 (名前) <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="modal-user-name" placeholder="例: 山田 太郎" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                    </div>
+                </div>
+
+                <div id="modal-error-msg" class="hidden text-xs text-rose-600 bg-rose-50 p-2.5 rounded border border-rose-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>ユーザーIDと氏名を両方入力してください。</span>
+                </div>
+            </div>
+
+            <!-- Modal Footer (Buttons) -->
+            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex flex-wrap justify-end gap-2">
+                <!-- 「変更なし」ボタン (既存データが存在する場合のみJSで表示切り替え) -->
+                <button id="btn-no-change" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs px-4 py-2.5 rounded-md transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-check-double"></i> 変更なし
+                </button>
+
+                <!-- 「入力」ボタン (新規保存・更新) -->
+                <button id="btn-submit-input" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-md shadow transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-floppy-disk"></i> 入力して保存
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
         let autoSaveTimer = null;
         let recognition = null;
         let isListening = false;
         let lastFocusedElement = null;
+        let dataID = null;
+
+        // Storage KEY
+        const STORAGE_KEY = 'saved_user_info';
 
         window.addEventListener('DOMContentLoaded', async () => {
             initReport();
 
             const urlParams = new URLSearchParams(window.location.search);
-            const dataID = urlParams.get('dataID');
+            dataID = urlParams.get('dataID');
+            if (dataID) {
+                openModal();
+            }
+        });
 
+        // localStorage から保存済みデータを取得する関数
+        function getSavedUserInfo() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                console.error('localStorage読み込みエラー:', e);
+                return null;
+            }
+        }
+
+        // DOM Elements - Modal
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const modalUserId = document.getElementById('modal-user-id');
+        const modalUserName = document.getElementById('modal-user-name');
+        const btnNoChange = document.getElementById('btn-no-change');
+        const btnSubmitInput = document.getElementById('btn-submit-input');
+        const modalErrorMsg = document.getElementById('modal-error-msg');
+        const modalDesc = document.getElementById('modal-desc');
+
+        // モーダルを開く処理
+        function openModal() {
+            const savedInfo = getSavedUserInfo();
+            modalErrorMsg.classList.add('hidden');
+
+            if (savedInfo && (savedInfo.id || savedInfo.name)) {
+                // 以前に保存されている場合
+                modalUserId.value = savedInfo.id || '';
+                modalUserName.value = savedInfo.name || '';
+                
+                // 「変更なし」ボタンを表示
+                btnNoChange.classList.remove('hidden');
+                modalDesc.innerHTML = '以前に保存されたユーザー情報が見つかりました。<br>このまま使用する場合は<strong class="text-slate-800">「変更なし」</strong>を、情報を更新する場合は入力後<strong class="text-indigo-600">「入力して保存」</strong>を押してください。';
+            } else {
+                // 以前の保存データがない場合
+                modalUserId.value = '';
+                modalUserName.value = '';
+                
+                // 「変更なし」ボタンを非表示
+                btnNoChange.classList.add('hidden');
+                modalDesc.textContent = '初回のダウンロードです。ユーザーIDと氏名を入力してください。情報はlocalStorageに保存されます。';
+            }
+            modalBackdrop.classList.remove('hidden');
+        }
+
+        // モーダルを閉じる処理
+        async function closeModal() {
             if (dataID) {
                 const filename = `Report${dataID}.json`;
                 const SUPABASE_URL = "https://ymchwhuubdvokkkyflkb.supabase.co";
                 const SUPABASE_KEY = "sb_publishable_SbcqGr8rFgkGWhFwoSwNGA_xFJjdMtN";
                 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                document.getElementById('debug-data-display').textContent += filename;
                 try {
                     const { data, error } = await supabaseClient
                         .storage
@@ -447,15 +564,122 @@
                     if (error) throw error;
 
                     const text = await data.text();
-                document.getElementById('debug-data-display').textContent = filename;
                     const json = JSON.parse(text);
+                    json.memberNo = modalUserId.value.trim();
+                    json.memberName = modalUserName.value.trim();
                     restoreFormData(json);
                     saveToLocalStorage(false)
                 } catch (error) {
                     console.error(`ファイル（就業報告書${dataID}.json）が見つかりません`, error);
                 }
+            } else {
+                document.getElementById('member-id') = modalUserId.value.trim();
+                document.getElementById('member-name') = modalUserName.value.trim();
+            }
+            modalBackdrop.classList.add('hidden');
+        }
+
+        // 実際にファイルをダウンロード生成する関数
+        function executeDownload(userInfo) {
+            const name = filenameInput.value.trim() || 'download';
+            const ext = filetypeSelect.value;
+            const filename = `${name}.${ext}`;
+            const userTextContent = fileContent.value;
+
+            let outputText = '';
+            let mimeType = 'text/plain;charset=utf-8';
+
+            // ファイルフォーマット別構成
+            if (ext === 'json') {
+                mimeType = 'application/json;charset=utf-8';
+                const payload = {
+                    downloaded_at: new Date().toISOString(),
+                    user_info: userInfo,
+                    content: userTextContent
+                };
+                outputText = JSON.stringify(payload, null, 2);
+            } else if (ext === 'csv') {
+                mimeType = 'text/csv;charset=utf-8';
+                outputText = `"ダウンロード日時","ユーザーID","氏名","内容"\n"${new Date().toLocaleString('ja-JP')}","${userInfo.id}","${userInfo.name}","${userTextContent.replace(/"/g, '""')}"`;
+            } else {
+                // txt
+                mimeType = 'text/plain;charset=utf-8';
+                outputText = `=== ダウンロード情報 ===\nダウンロード日時: ${new Date().toLocaleString('ja-JP')}\nユーザーID: ${userInfo.id}\n氏名: ${userInfo.name}\n\n=== 内容 ===\n${userTextContent}`;
+            }
+
+            // Blob生成 & ダウンロードリンク起動
+            try {
+                const blob = new Blob([outputText], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+
+                showToast(`「${filename}」のダウンロードを開始しました`);
+            } catch (e) {
+                console.error('Download error:', e);
+                showToast('ダウンロード処理でエラーが発生しました');
+            }
+        }
+
+        // 「入力して保存」ボタン押下時ハンドラ
+        btnSubmitInput.addEventListener('click', () => {
+            const idVal = modalUserId.value.trim();
+            const nameVal = modalUserName.value.trim();
+
+            if (!idVal || !nameVal) {
+                modalErrorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // localStorage に保存
+            const newUserInfo = {
+                id: idVal,
+                name: nameVal,
+                updatedAt: new Date().toLocaleString('ja-JP')
+            };
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newUserInfo));
+            closeModal();
+
+            // ダウンロード実行
+//            executeDownload(newUserInfo);
+        });
+
+        // 「変更なし」ボタン押下時ハンドラ
+        btnNoChange.addEventListener('click', () => {
+            const savedInfo = getSavedUserInfo();
+            if (savedInfo) {
+                closeModal();
+//                executeDownload(savedInfo);
+            } else {
+                modalErrorMsg.classList.remove('hidden');
             }
         });
+
+        // イベントリスナー登録
+        btnCloseModal.addEventListener('click', closeModal);
+
+        // 背景クリックで閉じる
+        modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) closeModal();
+        });
+
+        // トースト表示関数
+        function showToast(msg) {
+            toastMsg.textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
 
         function initReport() {
             const yearSelect = document.getElementById('report-year');
@@ -1103,15 +1327,18 @@
             }
 
             const itemName1Input = document.getElementById('item-name-1');
+            const itemName2Input = document.getElementById('item-name-2');
             if (itemName1Input && !document.getElementById('is-locked-checkbox').checked) {
-                if (format === 2) itemName1Input.value = '件数1';
-                else if (format === 3 || format === 4) {
-                    if (!itemName1Input.value || itemName1Input.value === '件数1' || itemName1Input.value === '日数') {
+                if (format === 2) {
+                    itemName1Input.value = '集合ポスト';
+                    itemName2Input.value = '戸建て';
+                } else if (format === 3 || format === 4) {
+                    if (!itemName1Input.value || itemName1Input.value !== '件数' || itemName1Input.value !== '日数') {
                         itemName1Input.value = '時間';
                     }
                 }
                 else if (format === 1) {
-                    if (!itemName1Input.value || itemName1Input.value === '件数1' || itemName1Input.value === '時間') {
+                    if (!itemName1Input.value || itemName1Input.value !== '件数' || itemName1Input.value !== '配分金') {
                         itemName1Input.value = '日数';
                     }
                 }
@@ -1143,7 +1370,7 @@
                 `;
             } else if (format === 2) {
                 const currentName1 = itemName1Input ? itemName1Input.value : '件数1';
-                const currentName2 = document.getElementById('item-name-2') ? document.getElementById('item-name-2').value : '件数2';
+                const currentName2 = itemName2Input ? itemName2Input.value : '件数2';
                 headerRow.innerHTML = `
                     <th class="col-day">日</th>
                     <th class="col-wday">曜日</th>
