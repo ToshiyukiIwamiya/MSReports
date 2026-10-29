@@ -2191,6 +2191,137 @@
             return results;
         }
 
+        function parseTownName(text) {
+            const townMap = {
+                'はらまちだ': '原町田', '原町、田': '原町田', '原町だ': '原町田',
+                'なかまち': '中町',
+                'あさひまち': '旭町', '朝日町': '旭町',
+                'もりの': '森野', '森の': '森野',
+                'ほんまちだ': '本町田', '本町だ': '本町田',
+                'みなみおおや': '南大谷',
+                'ふじのだい': '藤の台', '藤野台': '藤の台',
+                'たまがわがくえん': '玉川学園',
+                'ひがしたまがわがくえん': '東玉川学園',
+                'かなもり': '金森',
+                'かなもりひがし': '金森東',
+                'こがさか': '高ヶ坂', 'こうがさか': '高ヶ坂', '古賀、坂': '高ヶ坂',
+                'みなみまちだ': '南町田', '南町、田': '南町田',
+                'つるま': '鶴間',
+                'つくしの': 'つくし野',
+                'みなみつくしの': '南つくし野', '南、つくし野': '南つくし野',
+                'なるせ': '成瀬',
+                'にしなるせ': '西成瀬', '西、成瀬': '西成瀬',
+                'なるせだい': '成瀬台', 'なる世代': '成瀬台',
+                'みなみなるせ': '南成瀬', '南、成瀬': '南成瀬',
+                'なるせがおか': '成瀬が丘', '成瀬ヶ丘': '成瀬が丘',
+                'おがわ': '小川',
+                'のづたまち': '野津田町', 'のずたまち': '野津田町',
+                'かない': '金井', '課内': '金井', '家内': '金井',
+                'かないがおか': '金井ヶ丘',
+                'かないまち': '金井町',
+                'やくしだい': '薬師台', '薬師、第': '薬師台',
+                'つるかわ': '鶴川',
+                'おおくらまち': '大蔵町', '大倉町': '大蔵町',
+                'おのじまち': '小野路町', '小野寺町': '小野路町',
+                'しんこうじ': '真光寺',
+                'しんこうじまち': '真光寺町',
+                'ひろばかま': '広袴', '広場、窯': '広袴',
+                'ひろばかままち': '広袴町',
+                'のうがや': '能ヶ谷', '脳、がや': '能ヶ谷',
+                'みわまち': '三輪町', '三和町': '三輪町',
+                'みわみどりやま': '三輪緑山', '美輪緑山': '三輪緑山',
+                'やまざきまち': '山崎町',
+                'やまざき': '山崎',
+                'ずしまち': '図師町', '逗子町': '図師町',
+                'ただお': '忠生', 'ただ、お': '忠生',
+                'ねぎしまち': '根岸町',
+                'ねぎし': '根岸',
+                'きそひがし': '木曽東', '木曽、東': '木曽東',
+                'きそまち': '木曽町',
+                'きそにし': '木曽西', '木曽、西': '木曽西',
+                'ときわまち': '常盤町',
+                'やべまち': '矢部町',
+                'かみおやまだまち': '上小山田町',
+                'しもおやまだまち': '下小山田町',
+                'おやまださくらだい': '小山田桜台', '小山田、桜台': '小山田桜台',
+                'おやままち': '小山町',
+                'おやまがおか': '小山ヶ丘', '小山が丘': '小山ヶ丘',
+                'あいはらまち': '相原町'
+            };
+            const townNames = [
+                '原町田',
+                '中町',
+                '旭町',
+                '森野',
+                '本町田',
+                '南大谷',
+                '藤の台',
+                '東玉川学園',
+                '玉川学園',
+                '金森東',
+                '金森',
+                '高ヶ坂',
+                '南町田',
+                '鶴間',
+                'つくし野',
+                '南つくし野',
+                '成瀬',
+                '西成瀬',
+                '成瀬台',
+                '南成瀬',
+                '成瀬が丘',
+                '小川',
+                '野津田町',
+                '金井ヶ丘',
+                '金井町',
+                '金井',
+                '薬師台',
+                '鶴川',
+                '大蔵町',
+                '小野路町',
+                '真光寺町',
+                '真光寺',
+                '広袴町',
+                '広袴',
+                '能ヶ谷',
+                '三輪町',
+                '三輪緑山',
+                '山崎町',
+                '山崎',
+                '図師町',
+                '忠生',
+                '根岸町',
+                '根岸',
+                '木曽東',
+                '木曽町',
+                '木曽西',
+                '常盤町',
+                '矢部町',
+                '上小山田町',
+                '下小山田町',
+                '小山田桜台',
+                '小山町',
+                '小山ヶ丘',
+                '相原町'
+            ];
+            let result = '';
+            for (let key in townMap) {
+                if (text.includes(key)) text = text.replace(key, townMap[key]);
+            }
+            for (let town of townNames) {
+                if (text.includes(town)) {
+                document.getElementById('debug-data-display').textContent += ',' + town;
+                    text = text.replace(town,'');
+                    if (result === '') {
+                        result = town;
+                    } else {
+                        result = result + ',' + town;
+                    }
+                }
+            }
+            return result;
+        }
+
         function extractNumberFromTranscript(text) {
             let regex = /(?<!\d)(\d{1,4})/;
             let match = regex.exec(text);
@@ -2270,17 +2401,26 @@
                         document.getElementById(`f1-eval-${day.num}`).value 
                             = document.getElementById(`f1-eval-${day2.num}`).value;
                     } else {
-                        const el = document.getElementById(`f1-text-${day.num}`);
-                        activeInput = el;
+                        document.getElementById(`f1-text-${day.num}`).value
+                            = parseTownName(transcript);
+                        activeInput = document.getElementById(`f1-eval-${day.num}`);
+                        if (evalType.value === '件数' || evalType.value === '配分金') {
+                            document.getElementById(`f1-eval-${day.num}`).value 
+                                = extractNumberFromTranscript(transcript);
+                        }
                     }
                 } else {
-                    if (evalType.value === '件数' || evalType.value === '配分金') {
-                        const number = extractNumberFromTranscript(transcript);
-                        activeInput.value = number;
+                    if (activeInput.id.includes(`f1-text`)) {
+                        activeInput.value = parseTownName(transcript);
                     }
-                    calculateTotals();
-                    triggerAutoSave();
+                    if (activeInput === document.getElementById(`f1-eval-${day.num}`)) {
+                        if (evalType.value === '件数' || evalType.value === '配分金') {
+                            activeInput.value = extractNumberFromTranscript(transcript);
+                        }
+                    }
                 }
+                calculateTotals();
+                triggerAutoSave();
             }
             if (format === 2) {
                 if (day) {
