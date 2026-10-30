@@ -2194,7 +2194,7 @@
         function parseTownName(text) {
             const townMap = {
                 '第': '台',
-                'はらまちだ': '原町田', '原町、田': '原町田', '原町だ': '原町田',
+                'はらまちだ': '原町田', '原町、田': '原町田', '原，町田': '原町田', '原町だ': '原町田',
                 'なかまち': '中町',
                 'あさひまち': '旭町', '朝日町': '旭町',
                 'もりの': '森野', '森の': '森野',
@@ -2226,7 +2226,7 @@
                 'おのじまち': '小野路町', '小野寺町': '小野路町',
                 'しんこうじ': '真光寺', '心光寺': '真光寺',
                 'しんこうじまち': '真光寺町', '真麹町': '真光寺町', '新麹町': '真光寺町',
-                'ひろばかま': '広袴', '広場、窯': '広袴',
+                'ひろばかま': '広袴', '広場窯': '広袴', '広場、窯': '広袴',
                 'ひろばかままち': '広袴町',
                 'のうがや': '能ヶ谷', '脳、がや': '能ヶ谷',
                 'みわまち': '三輪町', '三和町': '三輪町',
@@ -2249,82 +2249,96 @@
                 'おやまがおか': '小山ヶ丘', '小山が丘': '小山ヶ丘',
                 'あいはらまち': '相原町'
             };
-            const townNames = [
-                '原町田',
-                '中町',
-                '旭町',
-                '森野',
-                '本町田',
-                '南大谷',
-                '藤の台',
-                '東玉川学園',
-                '玉川学園',
-                '金森東',
-                '金森',
-                '高ヶ坂',
-                '南町田',
-                '鶴間',
-                '南つくし野',
-                'つくし野',
-                '西成瀬',
-                '成瀬台',
-                '南成瀬',
-                '成瀬が丘',
-                '成瀬',
-                '小川',
-                '野津田町',
-                '金井ヶ丘',
-                '金井町',
-                '金井',
-                '薬師台',
-                '鶴川',
-                '大蔵町',
-                '小野路町',
-                '真光寺町',
-                '真光寺',
-                '広袴町',
-                '広袴',
-                '能ヶ谷',
-                '三輪町',
-                '三輪緑山',
-                '山崎町',
-                '山崎',
-                '図師町',
-                '忠生',
-                '根岸町',
-                '根岸',
-                '木曽東',
-                '木曽町',
-                '木曽西',
-                '常磐町',
-                '矢部町',
-                '上小山田町',
-                '下小山田町',
-                '小山田桜台',
-                '小山町',
-                '小山ヶ丘',
-                '相原町'
+            const regexs = [
+                /原町田/,
+                /中町/,
+                /旭町/,
+                /森野/,
+                /本町田/,
+                /南大谷/,
+                /藤の台/,
+                /東玉川学園/,
+                /(?<![東西南北])玉川学園/,
+                /金森東/,
+                /金森(?<![東西南北])/,
+                /高ヶ坂/,
+                /南町田/,
+                /鶴間/,
+                /南つくし野/,
+                /(?<![東西南北])つくし野/,
+                /西成瀬/,
+                /成瀬台/,
+                /南成瀬/,
+                /成瀬が丘/,
+                /(?<![東西南北])成瀬(?!台|が丘)/,
+                /小川/,
+                /野津田町/,
+                /金井ヶ丘/,
+                /金井町/,
+                /金井(?!が丘)/,
+                /薬師台/,
+                /鶴川/,
+                /大蔵町/,
+                /小野路町/,
+                /真光寺町/,
+                /真光寺(?!町)/,
+                /広袴町/,
+                /広袴(?!町)/,
+                /能ヶ谷/,
+                /三輪町/,
+                /三輪緑山/,
+                /山崎町/,
+                /山崎(?!町)/,
+                /図師町/,
+                /忠生/,
+                /根岸町/,
+                /根岸(?!町)/,
+                /木曽東/,
+                /木曽町/,
+                /木曽西/,
+                /常磐町/,
+                /矢部町/,
+                /上小山田町/,
+                /下小山田町/,
+                /小山田桜台/,
+                /小山町/,
+                /小山ヶ丘/,
+                /相原町/
             ];
-            let result = '';
             for (let key in townMap) {
-                if (text.includes(key)) text = text.replace(key, townMap[key]);
+                if (text.includes(key)) text = text.replaceAll(key, townMap[key]);
             }
-            for (let town of townNames) {
-                if (text.includes(town)) {
-                    text = text.replace(town,'');
-                    if (result === '') {
-                        result = town;
-                    } else {
-                        result = result + ',' + town;
-                    }
+            let match;
+            let results = [];
+            
+            // 👈 変数名を regs に統一
+            for (let regex of regexs) {
+                match = regex.exec(text); // 👈 let を外して外側の変数を利用
+                if (match) {
+                    results.push({
+                        index: match.index,
+                        data: match[0]
+                    });
                 }
             }
-            return result;
+            
+            // 出現位置（インデックス）が若い順にソート
+            results.sort((a, b) => a.index - b.index);
+            let towns = ''
+            for (let key in results) {
+                if (towns === '') {
+                    towns = results[key].data;
+                } else {
+                    towns = towns + ',' + results[key].data;
+                }
+            }
+            return towns;
         }
 
         function extractNumberFromTranscript(text) {
-            let regex = /(?<!\d)(\d{1,4})/;
+            let regex = /(?<!\d)(\d{1,4})(?!\d)/;
             let match = regex.exec(text);
+                document.getElementById('debug-data-display').textContent += ',' + match[0];
             if (!match) return;
             return match[0];
         }
@@ -2413,7 +2427,7 @@
                     if (activeInput.id.includes(`f1-text`)) {
                         activeInput.value = parseTownName(transcript);
                     }
-                    if (activeInput === document.getElementById(`f1-eval-${day.num}`)) {
+                    if (activeInput.id.includes(`f1-eval`)) {
                         if (evalType.value === '件数' || evalType.value === '配分金') {
                             activeInput.value = extractNumberFromTranscript(transcript);
                         }
