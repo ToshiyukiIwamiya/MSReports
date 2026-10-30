@@ -2336,7 +2336,7 @@
         }
 
         function extractNumberFromTranscript(text) {
-            let regex = /(?<!\d)(\d{1,4})(?!\d)/;
+            let regex = /(?<!\d)(\d{1,4})(?!\d|日)/;
             let match = regex.exec(text);
                 document.getElementById('debug-data-display').textContent += ',' + match[0];
             if (!match) return;
