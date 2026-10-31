@@ -2399,6 +2399,7 @@
                 regex = /(?<!\d)(\d{1,5})円/;
             }
             let match = regex.exec(text);
+                document.getElementById('debug-data-display').textContent += '';
             if (!match) return;
             return match[1];
         }
@@ -2492,12 +2493,7 @@
                         activeInput.value = parseTownName(transcript);
                     }
                     if (activeInput.id.includes(`f1-eval`)) {
-                        if (evalType.value === '件数') {
-                            activeInput.value = extractNumberWithUnitFromTranscript(transcript,1);
-                        }
-                        if (evalType.value === '配分金') {
-                            activeInput.value = extractNumberWithUnitFromTranscript(transcript,2);
-                        }
+                        activeInput.value = extractNumberFromTranscript(transcript);
                     }
                 }
                 calculateTotals();
