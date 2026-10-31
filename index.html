@@ -2399,7 +2399,6 @@
                 regex = /(?<!\d)(\d{1,5})円/;
             }
             let match = regex.exec(text);
-                document.getElementById('debug-data-display').textContent += ',' + match[0];
             if (!match) return;
             return match[1];
         }
