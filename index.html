@@ -2391,6 +2391,19 @@
             return match[0];
         }
 
+        function extractNumberWithUnitFromTranscript(text,unit) {
+            let regex
+            if (unit === 1) {
+                regex = /(?<!\d)(\d{1,4})件/;
+            } else {
+                regex = /(?<!\d)(\d{1,5})円/;
+            }
+            let match = regex.exec(text);
+                document.getElementById('debug-data-display').textContent += ',' + match[0];
+            if (!match) return;
+            return match[1];
+        }
+
         function extractNumbersFromTranscript(text) {
             let t = text;
             t = t.replace(/千/g, '1').replace(/百/g, '1').replace(/十/g, '1')
@@ -2466,9 +2479,13 @@
                         document.getElementById(`f1-text-${day.num}`).value
                             = parseTownName(transcript);
                         activeInput = document.getElementById(`f1-eval-${day.num}`);
-                        if (evalType.value === '件数' || evalType.value === '配分金') {
+                        if (evalType.value === '件数') {
                             document.getElementById(`f1-eval-${day.num}`).value 
-                                = extractNumberFromTranscript(transcript);
+                                = extractNumberWithUnitFromTranscript(transcript,1);
+                        }
+                        if (evalType.value === '配分金') {
+                            document.getElementById(`f1-eval-${day.num}`).value 
+                                = extractNumberWithUnitFromTranscript(transcript,2);
                         }
                     }
                 } else {
@@ -2476,8 +2493,11 @@
                         activeInput.value = parseTownName(transcript);
                     }
                     if (activeInput.id.includes(`f1-eval`)) {
-                        if (evalType.value === '件数' || evalType.value === '配分金') {
-                            activeInput.value = extractNumberFromTranscript(transcript);
+                        if (evalType.value === '件数') {
+                            activeInput.value = extractNumberWithUnitFromTranscript(transcript,1);
+                        }
+                        if (evalType.value === '配分金') {
+                            activeInput.value = extractNumberWithUnitFromTranscript(transcript,2);
                         }
                     }
                 }
