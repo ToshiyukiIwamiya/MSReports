@@ -208,11 +208,19 @@
 
         <div class="grid grid-cols-2 gap-2 mb-2">
             <div class="main-border flex flex-col h-36 print:h-32">
-                <div class="bg-slate-100 border-b border-black px-2 py-0.5 text-[12px] font-bold">
-                    【仕事の内容／連絡事項／申し送り事項】
+                <!-- ヘッダー部分 -->
+                <div class="bg-slate-100 border-b border-black px-2 py-0.5 text-[12px] font-bold select-none">
+                  【仕事の内容／連絡事項／申し送り事項】
                 </div>
-                <div class="flex-grow p-1">
-                    <textarea id="work-content-memo" class="resize-none text-xs" oninput="triggerAutoSave()" placeholder="ここに仕事の内容や連絡事項を入力してください"></textarea>
+                
+                <!-- 入力エリア（枠内いっぱいに広がるよう最適化） -->
+                <div class="flex-grow p-1 overflow-hidden">
+                    <textarea 
+                        id="work-content-memo" 
+                        class="w-full h-full resize-none text-xs outline-none bg-transparent" 
+                        oninput="triggerAutoSave()" 
+                        placeholder="ここに仕事の内容や連絡事項を入力してください"
+                    ></textarea>
                 </div>
             </div>
 
@@ -567,6 +575,7 @@
                     const json = JSON.parse(text);
                     json.memberNo = modalUserId.value.trim();
                     json.memberName = modalUserName.value.trim();
+                    json.month = document.getElementById('report-month').value;
                     restoreFormData(json);
                     saveToLocalStorage(false)
                 } catch (error) {
@@ -1687,7 +1696,8 @@
                 secretariatMemo: document.getElementById('secretariat-memo').value,
                 itemNames: {},
                 financials: {},
-                inputs: {}
+                inputs: {},
+                groupMembers: []
             };
 
             for (let i = 0; i <= 7; i++) {
@@ -1804,6 +1814,7 @@
             }
         }
 
+        let handle = null;
         function padZero(num, length = 2) {
             return String(num).padStart(length, '0');
         }
@@ -1816,18 +1827,21 @@
 
             if ('showSaveFilePicker' in window) {
                 try {
-                    const handle = await window.showSaveFilePicker({
-                        suggestedName: filename,
-                        types: [{
-                            description: 'JSON Files',
-                            accept: {
-                                'application/json': ['.json'],
-                            },
-                        }],
-                    });
+                    if (!handle) {
+                        handle = await window.showSaveFilePicker({
+                            suggestedName: filename,
+                            types: [{
+                                description: 'JSON Files',
+                                accept: {
+                                    'application/json': ['.json'],
+                                },
+                            }],
+                        });
+                    }
                     const writable = await handle.createWritable();
                     await writable.write(JSON.stringify(data, null, 2));
                     await writable.close();
+                    alert('保存しました！');
                 } catch (err) {
                     console.log('保存がキャンセルされたか、エラーが発生しました:', err);
                 }
@@ -1849,29 +1863,15 @@
             if (!files || files.length === 0) return;
 
             let loadedReportData = null;
-            let localIdFoundMessage = "localID.json は検知されませんでした。";
             let memberNoOverride = null;
             let memberNameOverride = null;
 
             for (let file of files) {
-                if (file.name === 'localID.json') {
-                    try {
-                        const text = await file.text();
-                        const json = JSON.parse(text);
-
-                        memberNoOverride = json.memberNo;
-                        memberNameOverride = json.memberName;
-                        localIdFoundMessage = "localID.json を正常に読み込み、会員情報を上書きしました！";
-                    } catch (e) {
-                        console.error('JSON parse error:', e);
-                    }
-                } else {
-                    try {
-                        const text = await file.text();
-                        loadedReportData = JSON.parse(text);
-                    } catch (e) {
-                        console.error('JSON parse error:', e);
-                    }
+                try {
+                    const text = await file.text();
+                    loadedReportData = JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
                 }
             }
 
@@ -2206,6 +2206,7 @@
                 '八': '8',
                 '九': '9',
                 '第': '台',
+                'まちだし': '町田市',
                 'はらまちだ': '原町田', '原町だ': '原町田',
                 'なかまち': '中町',
                 'あさひまち': '旭町', '朝日町': '旭町',

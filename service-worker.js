@@ -1,10 +1,25 @@
-const CACHE_NAME = 'logical-quest-v3';
+const CACHE_NAME = 'logical-quest-v4';
 // キャッシュするファイルのリスト
 // service-worker.jsファイルからの相対パスで指定
 const urlsToCache = [
   './index.html'
   // アイコンやCSSなども必要に応じて追加
 ];
+
+// 古いキャッシュの削除処理
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+});
 
 // 1. インストールイベント (Service Worker登録時に実行)
 self.addEventListener('install', (event) => {
