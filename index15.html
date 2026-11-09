@@ -187,12 +187,12 @@
     <div class="w-full overflow-x-auto pb-6 print:pb-0 print-wrapper">
     <div id="report-print-area" class="print-container max-w-[192mm] min-w-[700px] mx-auto bg-white p-[8mm] shadow-lg box-border text-black font-sans relative flex flex-col justify-between" style="min-height: 282mm;">
 
-        <div class="flex justify-between items-end mb-2">
+        <div id="header-top-container" class="flex justify-between items-end mb-2">
             <div class="flex items-center gap-3">
                 <h2 class="text-2xl font-black tracking-wider border-2 border-black px-3 py-1">就業報告書</h2>
-                <span class="bg-black text-white font-bold px-2 py-1 text-sm tracking-widest">提出用</span>
+                <span id="badge-mode-text" class="bg-black text-white font-bold px-2 py-1 text-sm tracking-widest">提出用</span>
             </div>
-            <div class="text-base font-medium tracking-widest flex items-center gap-2">
+            <div id="header-selectors-container" class="text-base font-medium tracking-widest flex items-center gap-2">
                 <div class="flex items-center gap-1">
                     <select id="report-format" onchange="updateCalendar(); triggerAutoSave();" class="print-select font-bold text-sm border-b border-black cursor-pointer bg-white locked-target">
                         <option value="1">様式1（文字列）</option>
@@ -548,16 +548,31 @@
             const tableLeft = document.getElementById('report-table-left');
             const tableRight = document.getElementById('report-table-right');
 
-            const boxWorkContent = document.getElementById('box-work-content'); // 仕事の内容の箱
-            const boxContractInfo = document.getElementById('box-contract-info'); // 契約件名などの箱
-            const boxSecretariat = document.getElementById('box-secretariat'); // 事務局記入欄
-            const boxFinancials = document.getElementById('box-financials');   // 配分金・合計の箱
+            const boxWorkContent = document.getElementById('box-work-content'); 
+            const boxContractInfo = document.getElementById('box-contract-info'); 
+            const boxSecretariat = document.getElementById('box-secretariat'); 
+            const boxFinancials = document.getElementById('box-financials');   
             const boxConfirmation = boxFinancials ? boxFinancials.querySelector('.border.border-black.p-1\\.5') : null;
+            
+            const badgeModeText = document.getElementById('badge-mode-text');
+            const headerTopContainer = document.getElementById('header-top-container');     // ★追加
+            const headerSelectorsContainer = document.getElementById('header-selectors-container'); // ★追加
 
             if (isMobileLayout) {
                 toggleText.textContent = "📄 標準表示(書類形式)へ";
                 toggleBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 toggleBtn.classList.add('bg-slate-700', 'hover:bg-slate-800');
+
+                if (badgeModeText) badgeModeText.textContent = "入力用"; 
+
+                // ★スマホ時はヘッダーを縦2行に切り替え（flex-col、左寄せ/上寄せ）
+                if (headerTopContainer) {
+                    headerTopContainer.classList.remove('flex-row', 'items-end');
+                    headerTopContainer.classList.add('flex-col', 'items-start', 'gap-2');
+                }
+                if (headerSelectorsContainer) {
+                    headerSelectorsContainer.classList.add('w-full', 'justify-between');
+                }
 
                 printArea.classList.remove('max-w-[192mm]', 'min-w-[700px]', 'p-[8mm]');
                 printArea.classList.add('max-w-md', 'w-full', 'p-2');
@@ -565,31 +580,25 @@
 
                 quickBox.classList.remove('hidden');
 
-                // 1. 「仕事の内容」を上のグリッドから外す（非表示にする）
                 if (boxWorkContent) boxWorkContent.classList.add('hidden');
 
-                // 2. 上部グリッド（mainGridInfo）には「契約件名」の箱だけを残して1列表示にする
                 mainGridInfo.classList.remove('grid-cols-2');
                 mainGridInfo.classList.add('grid-cols-1');
-                if (boxWorkContent) boxWorkContent.classList.add('hidden'); // 念のため非表示
-                if (boxContractInfo) boxContractInfo.classList.remove('hidden'); // 契約情報は残す
+                if (boxWorkContent) boxWorkContent.classList.add('hidden'); 
+                if (boxContractInfo) boxContractInfo.classList.remove('hidden'); 
 
-                // 3. 下部のグリッドを表示し、1列にする
                 mainGridBottom.classList.remove('hidden', 'grid-cols-2');
                 mainGridBottom.classList.add('grid-cols-1');
                 if (boxSecretariat) boxSecretariat.classList.add('hidden');
 
-                // 4. 「貴センターに発注した仕事が...」の確認箱を非表示にする
                 if (boxConfirmation) boxConfirmation.classList.add('hidden');
 
-                // 5. 「仕事の内容」の箱を下部（配分金計算の後ろ、一番下）に再配置して表示する
                 if (boxWorkContent) {
                     boxWorkContent.classList.remove('hidden', 'h-36', 'print:h-32');
                     boxWorkContent.classList.add('h-36', 'mt-2');
-                    mainGridBottom.appendChild(boxWorkContent); // 一番下に移動
+                    mainGridBottom.appendChild(boxWorkContent); 
                 }
 
-                // テーブルを1つ（100%幅）にして右テーブルを非表示
                 tablesWrapper.classList.remove('flex');
                 tablesWrapper.classList.add('block');
                 tableLeft.classList.remove('w-1/2', '-mr-[1px]');
@@ -602,13 +611,23 @@
                 toggleBtn.classList.remove('bg-slate-700', 'hover:bg-slate-800');
                 toggleBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
 
+                if (badgeModeText) badgeModeText.textContent = "提出用"; 
+
+                // ★標準表示時はヘッダーを元の横並びに戻す
+                if (headerTopContainer) {
+                    headerTopContainer.classList.remove('flex-col', 'items-start', 'gap-2');
+                    headerTopContainer.classList.add('flex-row', 'items-end');
+                }
+                if (headerSelectorsContainer) {
+                    headerSelectorsContainer.classList.remove('w-full', 'justify-between');
+                }
+
                 printArea.classList.add('max-w-[192mm]', 'min-w-[700px]', 'p-[8mm]');
                 printArea.classList.remove('max-w-md', 'p-2');
                 printArea.style.minHeight = '282mm';
 
                 quickBox.classList.add('hidden');
 
-                // 標準モードに戻す際、「仕事の内容」をもとの位置（mainGridInfoの先頭）に戻す
                 if (boxWorkContent) {
                     boxWorkContent.classList.remove('mt-2');
                     boxWorkContent.classList.add('h-36', 'print:h-32');
@@ -619,7 +638,6 @@
                 mainGridInfo.classList.remove('grid-cols-1');
                 mainGridInfo.classList.add('grid-cols-2');
                 
-                // 標準モード表示時は下の項目群を元に戻す
                 mainGridBottom.classList.remove('hidden', 'grid-cols-1');
                 mainGridBottom.classList.add('grid-cols-2');
                 if (boxSecretariat) boxSecretariat.classList.remove('hidden');
@@ -2660,62 +2678,99 @@
             const day = results[0];
 
             const format = parseInt(document.getElementById('report-format').value);
-            if (format === 1) {
-                const evalType = document.getElementById('f1-eval-type-1');
-                if (day) {
-                    const textEl = document.getElementById(`f1-text-${day.num}`);
-                    const evalEl = document.getElementById(`f1-eval-${day.num}`);
-                    
-                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+            if (day) {
+                if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                    if (format === 1) {
+                        const evalType = document.getElementById('f1-eval-type-1');
+                        const textEl = document.getElementById(`f1-text-${day.num}`);
+                        const evalEl = document.getElementById(`f1-eval-${day.num}`);
                         if (textEl) textEl.value = '';
                         if (evalEl && (evalType.value === '件数' || evalType.value === '配分金')) {
                             evalEl.value = '';
                         }
-                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
-                        const day2 = results[1];
-                        if (day2) {
+                    } else if (format === 2) {
+                        const el1 = document.getElementById(`f2-num1-${day.num}`);
+                        const el2 = document.getElementById(`f2-num2-${day.num}`);
+                        if (el1) el1.value = '';
+                        if (el2) el2.value = '';
+                    } else if (format === 3) {
+                        const startEl = document.getElementById(`f3-start-${day.num}`);
+                        const endEl = document.getElementById(`f3-end-${day.num}`);
+                        const breakEl = document.getElementById(`f3-break-${day.num}`);
+                        if (startEl) startEl.value = '';
+                        if (endEl) endEl.value = '';
+                        if (breakEl) breakEl.value = '';
+                    } else if (format === 4) {
+                        const s1El = document.getElementById(`f4-start1-${day.num}`);
+                        const e1El = document.getElementById(`f4-end1-${day.num}`);
+                        const s2El = document.getElementById(`f4-start2-${day.num}`);
+                        const e2El = document.getElementById(`f4-end2-${day.num}`);
+                        if (s1El) s1El.value = '';
+                        if (e1El) e1El.value = '';
+                        if (s2El) s2El.value = '';
+                        if (e2El) e2El.value = '';
+                    }
+                } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
+                    const day2 = results[1];
+                    if (day2) {
+                        if (format === 1) {
+                            const textEl = document.getElementById(`f1-text-${day.num}`);
+                            const evalEl = document.getElementById(`f1-eval-${day.num}`);
                             const srcText = document.getElementById(`f1-text-${day2.num}`);
                             const srcEval = document.getElementById(`f1-eval-${day2.num}`);
                             if (textEl && srcText) textEl.value = srcText.value;
                             if (evalEl && srcEval) evalEl.value = srcEval.value;
+                        } else if (format === 2) {
+                            const el1 = document.getElementById(`f2-num1-${day.num}`);
+                            const el2 = document.getElementById(`f2-num2-${day.num}`);
+                            const src1 = document.getElementById(`f2-num1-${day2.num}`);
+                            const src2 = document.getElementById(`f2-num2-${day2.num}`);
+                            if (el1 && src1) el1.value = src1.value;
+                            if (el2 && src2) el2.value = src2.value;
+                        } else if (format === 3) {
+                            const startEl = document.getElementById(`f3-start-${day.num}`);
+                            const endEl = document.getElementById(`f3-end-${day.num}`);
+                            const breakEl = document.getElementById(`f3-break-${day.num}`);
+                            const srcS = document.getElementById(`f3-start-${day2.num}`);
+                            const srcE = document.getElementById(`f3-end-${day2.num}`);
+                            const srcB = document.getElementById(`f3-break-${day2.num}`);
+                            if (startEl && srcS) startEl.value = srcS.value;
+                            if (endEl && srcE) endEl.value = srcE.value;
+                            if (breakEl && srcB) breakEl.value = srcB.value;
+                        } else if (format === 4) {
+                            const s1El = document.getElementById(`f4-start1-${day.num}`);
+                            const e1El = document.getElementById(`f4-end1-${day.num}`);
+                            const s2El = document.getElementById(`f4-start2-${day.num}`);
+                            const e2El = document.getElementById(`f4-end2-${day.num}`);
+                            const srcS1 = document.getElementById(`f4-start1-${day2.num}`);
+                            const srcE1 = document.getElementById(`f4-end1-${day2.num}`);
+                            const srcS2 = document.getElementById(`f4-start2-${day2.num}`);
+                            const srcE2 = document.getElementById(`f4-end2-${day2.num}`);
+                            if (s1El && srcS1) s1El.value = srcS1.value;
+                            if (e1El && srcE1) e1El.value = srcE1.value;
+                            if (s2El && srcS2) s2El.value = srcS2.value;
+                            if (e2El && srcE2) e2El.value = srcE2.value;
                         }
-                    } else {
-                        if (textEl) textEl.value = parseTownName(transcript);
-                        if (evalEl) {
+                    }
+                } else {
+                    if (format === 1) {
+                        const evalType = document.getElementById('f1-eval-type-1');
+                        const textEl = document.getElementById(`f1-text-${day.num}`);
+                        const evalEl = document.getElementById(`f1-eval-${day.num}`);
+                        if (textEl) {
+                            textEl.value = parseTownName(transcript);
                             activeInput = evalEl;
+                        }
+                        if (evalEl) {
                             if (evalType.value === '件数') {
                                 evalEl.value = extractNumberWithUnitFromTranscript(transcript, 1);
                             } else if (evalType.value === '配分金') {
                                 evalEl.value = extractNumberWithUnitFromTranscript(transcript, 2);
                             }
                         }
-                    }
-                } else if (activeInput) {
-                    if (activeInput.id.includes(`f1-text`)) {
-                        activeInput.value = parseTownName(transcript);
-                    } else if (activeInput.id.includes(`f1-eval`)) {
-                        activeInput.value = extractNumberFromTranscript(transcript);
-                    }
-                }
-                calculateTotals();
-                triggerAutoSave();
-            }
-            else if (format === 2) {
-                if (day) {
-                    const el1 = document.getElementById(`f2-num1-${day.num}`);
-                    const el2 = document.getElementById(`f2-num2-${day.num}`);
-                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
-                        if (el1) el1.value = '';
-                        if (el2) el2.value = '';
-                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
-                        const day2 = results[1];
-                        if (day2) {
-                            const src1 = document.getElementById(`f2-num1-${day2.num}`);
-                            const src2 = document.getElementById(`f2-num2-${day2.num}`);
-                            if (el1 && src1) el1.value = src1.value;
-                            if (el2 && src2) el2.value = src2.value;
-                        }
-                    } else {
+                    } else if (format === 2) {
+                        const el1 = document.getElementById(`f2-num1-${day.num}`);
+                        const el2 = document.getElementById(`f2-num2-${day.num}`);
                         const numbers = extractNumbersFromTranscript(transcript);
                         if (numbers.length >= 1 && el1) {
                             el1.value = numbers[0].num;
@@ -2724,37 +2779,12 @@
                         if (numbers.length >= 2 && el2) {
                             el2.value = numbers[1].num;
                         }
-                    }
-                } else if (activeInput) {
-                    const numbers = extractNumbersFromTranscript(transcript);
-                    if (numbers.length > 0) activeInput.value = numbers[0].num;
-                }
-                calculateTotals();
-                triggerAutoSave();
-            }
-            else if (format === 3) {
-                const times = extractTimesFromTranscript(transcript);
-                const minutes = extractMinutesFromTranscript(transcript);
-                if (day) {
-                    const startEl = document.getElementById(`f3-start-${day.num}`);
-                    const endEl = document.getElementById(`f3-end-${day.num}`);
-                    const breakEl = document.getElementById(`f3-break-${day.num}`);
-
-                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
-                        if (startEl) startEl.value = '';
-                        if (endEl) endEl.value = '';
-                        if (breakEl) breakEl.value = '';
-                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
-                        const day2 = results[1];
-                        if (day2) {
-                            const srcS = document.getElementById(`f3-start-${day2.num}`);
-                            const srcE = document.getElementById(`f3-end-${day2.num}`);
-                            const srcB = document.getElementById(`f3-break-${day2.num}`);
-                            if (startEl && srcS) startEl.value = srcS.value;
-                            if (endEl && srcE) endEl.value = srcE.value;
-                            if (breakEl && srcB) breakEl.value = srcB.value;
-                        }
-                    } else {
+                    } else if (format === 3) {
+                        const times = extractTimesFromTranscript(transcript);
+                        const minutes = extractMinutesFromTranscript(transcript);
+                        const startEl = document.getElementById(`f3-start-${day.num}`);
+                        const endEl = document.getElementById(`f3-end-${day.num}`);
+                        const breakEl = document.getElementById(`f3-break-${day.num}`);
                         if (times.length >= 1 && startEl) {
                             startEl.value = times[0];
                             if (endEl) activeInput = endEl;
@@ -2766,42 +2796,11 @@
                         if (minutes.length >= 1 && breakEl) {
                             breakEl.value = minutes[0];
                         }
-                    }
-                } else if (activeInput) {
-                    if (activeInput.id.includes('start') || activeInput.id.includes('end')) {
-                        if (times.length > 0) activeInput.value = times[0];
-                    } else {
-                        if (minutes.length > 0) activeInput.value = minutes[0];
-                    }
-                }
-                calculateTotals();
-                triggerAutoSave();
-            }
-            else if (format === 4) {
-                if (day) {
-                    const s1El = document.getElementById(`f4-start1-${day.num}`);
-                    const e1El = document.getElementById(`f4-end1-${day.num}`);
-                    const s2El = document.getElementById(`f4-start2-${day.num}`);
-                    const e2El = document.getElementById(`f4-end2-${day.num}`);
-
-                    if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
-                        if (s1El) s1El.value = '';
-                        if (e1El) e1El.value = '';
-                        if (s2El) s2El.value = '';
-                        if (e2El) e2El.value = '';
-                    } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
-                        const day2 = results[1];
-                        if (day2) {
-                            const srcS1 = document.getElementById(`f4-start1-${day2.num}`);
-                            const srcE1 = document.getElementById(`f4-end1-${day2.num}`);
-                            const srcS2 = document.getElementById(`f4-start2-${day2.num}`);
-                            const srcE2 = document.getElementById(`f4-end2-${day2.num}`);
-                            if (s1El && srcS1) s1El.value = srcS1.value;
-                            if (e1El && srcE1) e1El.value = srcE1.value;
-                            if (s2El && srcS2) s2El.value = srcS2.value;
-                            if (e2El && srcE2) e2El.value = srcE2.value;
-                        }
-                    } else {
+                    } else if (format === 4) {
+                        const s1El = document.getElementById(`f4-start1-${day.num}`);
+                        const e1El = document.getElementById(`f4-end1-${day.num}`);
+                        const s2El = document.getElementById(`f4-start2-${day.num}`);
+                        const e2El = document.getElementById(`f4-end2-${day.num}`);
                         const times = extractTimesFromTranscript(transcript);
                         if (times.length >= 1 && s1El) {
                             s1El.value = times[0];
@@ -2819,13 +2818,32 @@
                             e2El.value = times[3];
                         }
                     }
-                } else if (activeInput) {
+                }
+            } else if (activeInput) {
+                if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                    activeInput.value = '';
+                } else if (format === 1) {
+                    if (activeInput.id.includes(`f1-text`)) {
+                        activeInput.value = parseTownName(transcript);
+                    } else if (activeInput.id.includes(`f1-eval`)) {
+                        activeInput.value = extractNumberFromTranscript(transcript);
+                    }
+                } else if (format === 2) {
+                    const numbers = extractNumbersFromTranscript(transcript);
+                    if (numbers.length > 0) activeInput.value = numbers[0].num;
+                } else if (format === 3) {
+                    if (activeInput.id.includes('start') || activeInput.id.includes('end')) {
+                        if (times.length > 0) activeInput.value = times[0];
+                    } else {
+                        if (minutes.length > 0) activeInput.value = minutes[0];
+                    }
+                } else if (format === 4) {
                     const times = extractTimesFromTranscript(transcript);
                     if (times.length > 0) activeInput.value = times[0];
                 }
-                calculateTotals();
-                triggerAutoSave();
             }
+            calculateTotals();
+            triggerAutoSave();
         }
     </script>
 </body>
