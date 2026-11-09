@@ -548,6 +548,12 @@
             const tableLeft = document.getElementById('report-table-left');
             const tableRight = document.getElementById('report-table-right');
 
+            const boxWorkContent = document.getElementById('box-work-content'); // 仕事の内容の箱
+            const boxSecretariat = document.getElementById('box-secretariat'); // 事務局記入欄
+            const boxFinancials = document.getElementById('box-financials');   // 配分金・合計の箱
+            // 印鑑欄（「貴センターに発注した仕事が...」の箱）を取得するため、box-financials の中の最初の要素を指定
+            const boxConfirmation = boxFinancials ? boxFinancials.querySelector('.border.border-black.p-1\\.5') : null;
+
             if (isMobileLayout) {
                 toggleText.textContent = "📄 標準表示(書類形式)へ";
                 toggleBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -559,11 +565,27 @@
 
                 quickBox.classList.remove('hidden');
 
-                mainGridInfo.classList.remove('grid-cols-2');
-                mainGridInfo.classList.add('grid-cols-1');
-                
-                // スマホモード時は下の項目群（事務局記入欄・配分金計算など）を非表示にする
-                mainGridBottom.classList.add('hidden');
+                // 1. 「仕事の内容」を上のグリッドから外す（非表示にするなど）
+                if (boxWorkContent) boxWorkContent.classList.add('hidden');
+
+                mainGridInfo.classList.remove('grid-cols-2', 'grid-cols-1');
+                mainGridInfo.classList.add('hidden'); // 上部のグリッド枠を一旦隠す
+
+                // 2. 下部のグリッドを表示し、1列にする
+                mainGridBottom.classList.remove('hidden', 'grid-cols-2');
+                mainGridBottom.classList.add('grid-cols-1');
+                if (boxSecretariat) boxSecretariat.classList.add('hidden');
+
+                // 3. 「貴センターに発注した仕事が...」の確認箱を非表示にする
+                if (boxConfirmation) boxConfirmation.classList.add('hidden');
+
+                // 4. 「仕事の内容」の箱を下部（配分金計算の前、あるいは一番下）に再配置して表示する
+                // ここでは一番下に表示させるため、mainGridBottom の中に「仕事の内容」を挿入します
+                if (boxWorkContent) {
+                    boxWorkContent.classList.remove('hidden', 'h-36', 'print:h-32');
+                    boxWorkContent.classList.add('h-36', 'mt-2');
+                    mainGridBottom.appendChild(boxWorkContent); // 一番下に移動
+                }
 
                 // テーブルを1つ（100%幅）にして右テーブルを非表示
                 tablesWrapper.classList.remove('flex');
@@ -584,13 +606,22 @@
 
                 quickBox.classList.add('hidden');
 
-                mainGridInfo.classList.remove('grid-cols-1');
+                // 標準モードに戻す際、「仕事の内容」をもとの位置（mainGridInfo）に戻す
+                if (boxWorkContent) {
+                    boxWorkContent.classList.remove('mt-2');
+                    boxWorkContent.classList.add('h-36', 'print:h-32');
+                    mainGridInfo.insertBefore(boxWorkContent, mainGridInfo.firstChild);
+                    boxWorkContent.classList.remove('hidden');
+                }
+
+                mainGridInfo.classList.remove('hidden');
                 mainGridInfo.classList.add('grid-cols-2');
                 
-                // 標準モード表示時は下の項目群を表示
-                mainGridBottom.classList.remove('hidden');
-                mainGridBottom.classList.remove('grid-cols-1');
+                // 標準モード表示時は下の項目群を元に戻す
+                mainGridBottom.classList.remove('hidden', 'grid-cols-1');
                 mainGridBottom.classList.add('grid-cols-2');
+                if (boxSecretariat) boxSecretariat.classList.remove('hidden');
+                if (boxConfirmation) boxConfirmation.classList.remove('hidden');
 
                 tablesWrapper.classList.remove('block');
                 tablesWrapper.classList.add('flex');
