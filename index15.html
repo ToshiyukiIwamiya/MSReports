@@ -549,9 +549,9 @@
             const tableRight = document.getElementById('report-table-right');
 
             const boxWorkContent = document.getElementById('box-work-content'); // 仕事の内容の箱
+            const boxContractInfo = document.getElementById('box-contract-info'); // 契約件名などの箱
             const boxSecretariat = document.getElementById('box-secretariat'); // 事務局記入欄
             const boxFinancials = document.getElementById('box-financials');   // 配分金・合計の箱
-            // 印鑑欄（「貴センターに発注した仕事が...」の箱）を取得するため、box-financials の中の最初の要素を指定
             const boxConfirmation = boxFinancials ? boxFinancials.querySelector('.border.border-black.p-1\\.5') : null;
 
             if (isMobileLayout) {
@@ -565,22 +565,24 @@
 
                 quickBox.classList.remove('hidden');
 
-                // 1. 「仕事の内容」を上のグリッドから外す（非表示にするなど）
+                // 1. 「仕事の内容」を上のグリッドから外す（非表示にする）
                 if (boxWorkContent) boxWorkContent.classList.add('hidden');
 
-                mainGridInfo.classList.remove('grid-cols-2', 'grid-cols-1');
-                mainGridInfo.classList.add('hidden'); // 上部のグリッド枠を一旦隠す
+                // 2. 上部グリッド（mainGridInfo）には「契約件名」の箱だけを残して1列表示にする
+                mainGridInfo.classList.remove('grid-cols-2');
+                mainGridInfo.classList.add('grid-cols-1');
+                if (boxWorkContent) boxWorkContent.classList.add('hidden'); // 念のため非表示
+                if (boxContractInfo) boxContractInfo.classList.remove('hidden'); // 契約情報は残す
 
-                // 2. 下部のグリッドを表示し、1列にする
+                // 3. 下部のグリッドを表示し、1列にする
                 mainGridBottom.classList.remove('hidden', 'grid-cols-2');
                 mainGridBottom.classList.add('grid-cols-1');
                 if (boxSecretariat) boxSecretariat.classList.add('hidden');
 
-                // 3. 「貴センターに発注した仕事が...」の確認箱を非表示にする
+                // 4. 「貴センターに発注した仕事が...」の確認箱を非表示にする
                 if (boxConfirmation) boxConfirmation.classList.add('hidden');
 
-                // 4. 「仕事の内容」の箱を下部（配分金計算の前、あるいは一番下）に再配置して表示する
-                // ここでは一番下に表示させるため、mainGridBottom の中に「仕事の内容」を挿入します
+                // 5. 「仕事の内容」の箱を下部（配分金計算の後ろ、一番下）に再配置して表示する
                 if (boxWorkContent) {
                     boxWorkContent.classList.remove('hidden', 'h-36', 'print:h-32');
                     boxWorkContent.classList.add('h-36', 'mt-2');
@@ -606,7 +608,7 @@
 
                 quickBox.classList.add('hidden');
 
-                // 標準モードに戻す際、「仕事の内容」をもとの位置（mainGridInfo）に戻す
+                // 標準モードに戻す際、「仕事の内容」をもとの位置（mainGridInfoの先頭）に戻す
                 if (boxWorkContent) {
                     boxWorkContent.classList.remove('mt-2');
                     boxWorkContent.classList.add('h-36', 'print:h-32');
@@ -614,7 +616,7 @@
                     boxWorkContent.classList.remove('hidden');
                 }
 
-                mainGridInfo.classList.remove('hidden');
+                mainGridInfo.classList.remove('grid-cols-1');
                 mainGridInfo.classList.add('grid-cols-2');
                 
                 // 標準モード表示時は下の項目群を元に戻す
