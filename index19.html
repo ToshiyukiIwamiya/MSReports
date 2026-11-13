@@ -1,0 +1,3126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="MSJ192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="就業報告書">
+    <title>就業報告書 入力システム</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2pdf.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- pdf-lib CDN (PDFへのファイル添付に使用) -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-wrapper {
+                width: 100% !important;
+                overflow: visible !important;
+                padding: 0 !important;
+            }
+            .print-container {
+                box-shadow: none !important;
+                margin: auto !important;
+                width: 192mm !important;
+                max-width: 192mm !important;
+                height: 282mm !important;
+                max-height: 282mm !important;
+                padding: 6mm 7mm !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            select.print-select {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                background: transparent;
+                border: none;
+                text-align-last: center;
+            }
+            .report-table th, .report-table td {
+                height: 24px !important;
+                font-size: 12px !important;
+            }
+            input:placeholder-shown,
+            textarea:placeholder-shown {
+                color: transparent !important;
+                -webkit-text-fill-color: transparent !important;
+            }
+        }
+        input, textarea, select {
+            background-color: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            height: 100%;
+            padding: 2px 4px;
+            font-size: 13px;
+        }
+        input:focus, textarea:focus, select:focus {
+            background-color: rgba(59, 130, 246, 0.08);
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.5);
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .report-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .report-table th, .report-table td {
+            border: 1px solid #000;
+            padding: 1px 2px;
+            font-size: 12px;
+            height: 28px;
+            vertical-align: middle;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .col-day {
+            width: 24px !important;
+            min-width: 24px !important;
+            max-width: 24px !important;
+        }
+        .col-wday {
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
+        }
+        .col-eval {
+            width: 48px !important;
+            min-width: 48px !important;
+            max-width: 48px !important;
+        }
+        .main-border {
+            border: 2px solid #000;
+        }
+
+        /* スマホ入力モードで横向きのときの文字サイズ拡大とレイアウト完全調整 */
+        @media screen and (orientation: landscape) {
+            #report-print-area.is-landscape input,
+            #report-print-area.is-landscape textarea,
+            #report-print-area.is-landscape select {
+                font-size: 18px !important;
+                height: 42px !important;
+            }
+
+            #report-print-area.is-landscape .report-table th, 
+            #report-print-area.is-landscape .report-table td {
+                font-size: 18px !important;
+                height: 42px !important;
+                white-space: normal !important;
+            }
+
+            #report-print-area.is-landscape #box-contract-info {
+                height: auto !important;
+                min-height: 170px !important;
+            }
+            #report-print-area.is-landscape #box-contract-info span,
+            #report-print-area.is-landscape #box-contract-info input {
+                font-size: 15px !important;
+            }
+            #report-print-area.is-landscape #box-contract-info input {
+                height: 32px !important;
+            }
+
+            #report-print-area.is-landscape #box-financials,
+            #report-print-area.is-landscape #box-financials span,
+            #report-print-area.is-landscape #box-financials div {
+                font-size: 15px !important;
+            }
+            
+            /* ★配分金ボックス全体のパディングと各行の高さを均一にしっかり広げる */
+            #report-print-area.is-landscape #top-item-row-container {
+                padding: 14px 16px !important;
+            }
+            #report-print-area.is-landscape #top-item-row-container .flex {
+                min-height: 42px !important;
+                padding-top: 6px !important;
+                padding-bottom: 6px !important;
+                box-sizing: border-box !important;
+            }
+
+            #report-print-area.is-landscape #box-financials .flex.items-center.gap-1 {
+                gap: 8px !important;
+            }
+            #report-print-area.is-landscape #box-financials input {
+                font-size: 15px !important;
+                height: 36px !important;
+            }
+            #report-print-area.is-landscape #box-financials input.w-10 {
+                width: 55px !important;
+            }
+            #report-print-area.is-landscape #box-financials input.w-14,
+            #report-print-area.is-landscape #box-financials input.w-16 {
+                width: 75px !important;
+            }
+            #report-print-area.is-landscape #box-financials input.w-24 {
+                width: 110px !important;
+            }
+        }
+
+        /* スマホ入力モードの横置き時に文字を大きくする設定 */
+        #report-print-area.is-landscape input,
+        #report-print-area.is-landscape textarea,
+        #report-print-area.is-landscape select {
+            font-size: 18px !important; /* さらに大きくする場合 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen py-8 print:py-0">
+
+    <!-- 操作パネル (no-print) -->
+    <div class="max-w-[210mm] mx-auto mb-3 px-4 no-print bg-white p-3 rounded-lg shadow border border-slate-200">
+        <h1 class="text-lg font-bold text-slate-800">就業報告書 入力・作成フォーム</h1>
+        <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 hidden">
+            <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer bg-slate-50 px-2 py-1.5 rounded border border-slate-300 select-none">
+                <input type="checkbox" id="is-locked-checkbox" onchange="toggleLockState();" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                <span>項目名ロック</span>
+            </label>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
+            <button id="layout-toggle-btn" onclick="toggleLayoutMode();" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow transition flex items-center gap-1">
+                <span id="layout-toggle-text">📱 スマホ入力モードへ</span>
+            </button>
+
+            <button id="voice-btn" onclick="toggleVoiceInput();" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                <span id="voice-btn-text">音声入力</span>
+            </button>
+
+            <label class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded shadow cursor-pointer transition flex items-center">
+                <span>ファイル読込</span>
+                <input type="file" id="import-file" accept=".json" multiple class="hidden" onchange="importJSONFiles(event);">
+            </label>
+
+            <button onclick="exportJSONFile();" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                ファイル保存
+            </button>
+
+            <button onclick="clearLocalStorageAndReload();" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                クリア
+            </button>
+
+            <button onclick="window.print();" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                印刷
+            </button>
+
+            <button onclick="saveAsPDF();" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                PDF保存 (JSON添付)
+            </button>
+
+            <button onclick="sendEmailReport();" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                メール送信
+            </button>
+
+            <button onclick="openHistoryModal()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+                提出履歴管理
+            </button>
+        </div>
+        <div id="voice-status" class="mt-1.5 text-xs text-emerald-700 font-medium hidden">🎤 音声認識中...話してください</div>
+        <div id="voice-transcript-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
+        <div id="processed-transcript-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
+        <div id="debug-data-display" class="mt-1 text-xs text-blue-600 font-medium"></div>
+    </div>
+
+    <div class="w-full overflow-x-auto pb-6 print:pb-0 print-wrapper">
+    <div id="report-print-area" class="print-container max-w-[192mm] min-w-[700px] mx-auto bg-white p-[8mm] shadow-lg box-border text-black font-sans relative flex flex-col justify-between" style="min-height: 282mm;">
+
+        <div id="header-top-container" class="flex justify-between items-end mb-2">
+            <div class="flex items-center gap-3">
+                <h2 class="text-2xl font-black tracking-wider border-2 border-black px-3 py-1">就業報告書</h2>
+                <span id="badge-mode-text" class="bg-black text-white font-bold px-2 py-1 text-sm tracking-widest">提出用</span>
+            </div>
+            <div id="header-selectors-container" class="text-base font-medium tracking-widest flex items-center gap-2">
+                <div class="flex items-center gap-1">
+                    <select id="report-format" onchange="updateCalendar(); triggerAutoSave();" class="print-select font-bold text-sm border-b border-black cursor-pointer bg-white locked-target">
+                        <option value="1">様式1（文字列）</option>
+                        <option value="2">様式2（件数）</option>
+                        <option value="3" selected>様式3（時刻）</option>
+                        <option value="4">様式4（4分割時刻）</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-1">
+                    <select id="report-year" onchange="updateCalendar(); triggerAutoSave();" class="print-select text-center font-bold text-base w-20 border-b border-black cursor-pointer">
+                    </select> 年 
+                    <select id="report-month" onchange="updateCalendar(); triggerAutoSave();" class="print-select text-center font-bold text-base w-14 border-b border-black cursor-pointer">
+                    </select> 月
+                </div>
+            </div>
+        </div>
+
+        <!-- スマホ入力用 クイック入力欄 (初期状態は非表示) -->
+        <div id="mobile-quick-input-box" class="hidden no-print">
+            <div class="bg-slate-100 border-b border-black px-2 py-0.5 text-[12px] font-bold select-none">
+              【キーボード入力用】
+            </div>
+            <table class="w-full report-table border-collapse mb-2" id="input-table">
+                <thead>
+                    <tr id="table-header-input" class="bg-slate-100 text-center font-bold"></tr>
+                </thead>
+                <tbody id="calendar-body-input"></tbody>
+            </table>
+        </div>
+
+        <div id="main-grid-info" class="grid grid-cols-2 gap-2 mb-2">
+            <div class="main-border flex flex-col h-36 print:h-32" id="box-work-content">
+                <!-- ヘッダー部分 -->
+                <div class="bg-slate-100 border-b border-black px-2 py-0.5 text-[12px] font-bold select-none">
+                  【仕事の内容／連絡事項／申し送り事項】
+                </div>
+                
+                <!-- 入力エリア -->
+                <div class="flex-grow p-1 overflow-hidden">
+                    <textarea 
+                        id="work-content-memo" 
+                        class="w-full h-full resize-none text-xs outline-none bg-transparent" 
+                        oninput="triggerAutoSave();" 
+                        placeholder="ここに仕事の内容や連絡事項を入力してください"
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="main-border flex flex-col justify-between p-1 text-xs space-y-0 h-36 print:h-32" id="box-contract-info">
+                <div class="flex items-center border-b border-gray-300 pb-0.5">
+                    <span class="w-20 font-bold shrink-0">契約件名：</span>
+                    <input type="text" id="contract-title" class="flex-grow font-medium min-w-0 py-0 text-xs" oninput="triggerAutoSave();" placeholder="">
+                    <span class="font-bold shrink-0 ml-1">業務委託</span>
+                </div>
+                <div class="flex items-center border-b border-gray-300 pb-0.5">
+                    <span class="w-20 font-bold shrink-0">契約番号：</span>
+                    <input type="text" id="contract-no" class="flex-grow min-w-0 py-0 text-xs" oninput="triggerAutoSave();" placeholder="">
+                </div>
+                <div class="flex items-center border-b border-gray-300 pb-0.5">
+                    <span class="w-20 font-bold shrink-0">発注者名：</span>
+                    <input type="text" id="client-name" class="flex-grow font-medium min-w-0 py-0 text-xs" oninput="triggerAutoSave();" placeholder="">
+                    <span class="font-bold ml-1 shrink-0">様</span>
+                </div>
+                <div class="flex items-center border-b border-gray-300 pb-0.5">
+                    <span class="w-20 font-bold shrink-0">会員番号：</span>
+                    <input type="text" id="member-no" class="flex-grow min-w-0 py-0 text-xs" oninput="triggerAutoSave();" placeholder="">
+                </div>
+                <div class="flex items-center">
+                    <span class="w-20 font-bold shrink-0">会員氏名：</span>
+                    <input type="text" id="member-name" class="flex-grow font-medium min-w-0 py-0 text-xs" oninput="triggerAutoSave();" placeholder="">
+                </div>
+            </div>
+        </div>
+
+        <!-- 左右2つの独立テーブルをピッタリ並べるコンテナ -->
+        <div class="flex w-full mb-2 items-start" id="report-tables-wrapper">
+            <!-- 左テーブル (1〜16日) -->
+            <table class="w-1/2 report-table border-collapse -mr-[1px]" id="report-table-left">
+                <thead>
+                    <tr id="table-header-left" class="bg-slate-100 text-center font-bold"></tr>
+                </thead>
+                <tbody id="calendar-body-left"></tbody>
+            </table>
+
+            <!-- 右テーブル (17〜末日) -->
+            <table class="w-1/2 report-table border-collapse" id="report-table-right">
+                <thead>
+                    <tr id="table-header-right" class="bg-slate-100 text-center font-bold"></tr>
+                </thead>
+                <tbody id="calendar-body-right"></tbody>
+            </table>
+        </div>
+
+        <div id="main-grid-bottom" class="grid grid-cols-2 gap-2.5">
+            <div class="flex flex-col justify-between" id="box-secretariat">
+                <div class="main-border h-48 print:h-44 flex flex-col mb-1.5">
+                    <div class="bg-slate-100 border-b border-black px-2 py-0.5 text-[12px] font-bold">
+                        【事務局記入欄】
+                    </div>
+                    <div class="flex-grow p-1">
+                        <textarea id="secretariat-memo" class="resize-none text-xs locked-target" oninput="triggerAutoSave();" onfocus="setActiveInput(this);" placeholder=""></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center border border-black p-1.5 bg-slate-50 text-[12px] leading-tight">
+                    <div class="font-bold text-xs">公益社団法人 町田市シルバー人材センター</div>
+                    <div>〒194-0022 町田市森野1-1-15</div>
+                    <div>電話 042-723-2147　FAX 042-724-0407</div>
+                    <div class="font-medium text-slate-700 mt-0.5">提出専用メールアドレス</div>
+                    <div class="text-blue-600 underline">houkoku@machida-sjc.or.jp</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col justify-between" id="box-financials">
+                <div class="border border-black p-1.5 text-[11px] flex justify-between items-center mb-1">
+                    <span class="leading-tight text-[14px]">貴センターに発注した仕事が<br>履行されたことを確認いたします。</span>
+                    <div class="border border-black w-24 h-16 flex items-center justify-center text-center text-gray-400 text-xs bg-white shrink-0">
+                        印またはサイン
+                    </div>
+                </div>
+
+                <div id="top-item-row-container" class="main-border p-1.5 text-xs space-y-1 print:space-y-0.5 bg-white">
+                    <div class="font-bold text-[12px] border-b border-black pb-0.5 mb-0.5">配分金</div>
+
+                    <div id="top-item-row-0" class="flex items-center justify-between hidden">
+                        <input type="text" id="item-name-0" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="配分金" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="p0-total" class="border-b border-gray-400 w-16 text-right font-medium shrink sum-group-1 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div id="top-item-row-1" class="flex items-center justify-between">
+                        <input type="text" id="item-name-1" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="時間" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <input type="text" id="p1-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs">円×</span>
+                            <input type="text" id="p1-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="評価合計と連動">
+                            <span class="shrink-0 text-xs">＝</span>
+                            <input type="text" id="p1-total" class="border-b border-gray-400 w-14 text-right font-medium shrink calc-total text-xs" readonly placeholder="0">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between" id="row-allocation-2">
+                        <input type="text" id="item-name-2" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs" value="件数2" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <input type="text" id="p2-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs">円×</span>
+                            <input type="text" id="p2-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs bg-slate-50 font-bold" readonly placeholder="0" title="様式2の件数2合計と連動">
+                            <span class="shrink-0 text-xs">＝</span>
+                            <input type="text" id="p2-total" class="border-b border-gray-400 w-14 text-right font-medium shrink calc-total text-xs" readonly placeholder="0">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="item-name-3" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="交通費等" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <input type="text" id="p3-price" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs">円×</span>
+                            <input type="text" id="p3-count" class="border-b border-gray-400 w-10 text-right shrink calc-source text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs">＝</span>
+                            <input type="text" id="p3-total" class="border-b border-gray-400 w-14 text-right font-medium shrink calc-total text-xs" readonly placeholder="0">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="item-name-4" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="控  除" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="item-deduction" class="border-b border-gray-400 w-16 text-right font-medium shrink sum-group-1 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="item-name-5" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="立替材料費" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="item-advance" class="border-b border-gray-400 w-16 text-right font-medium shrink sum-group-1 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between font-bold border-t border-black pt-1">
+                        <span class="shrink-0 text-xs">配分金合計</span>
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="subtotal-amount" class="border-b border-black w-16 text-right font-bold text-xs locked-target" readonly placeholder="0">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="item-name-6" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="材料費" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="item-material" class="border-b border-gray-400 w-16 text-right font-medium shrink sum-group-2 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <input type="text" id="item-name-7" maxlength="10" class="border-b border-gray-400 w-24 text-left shrink font-medium text-xs locked-target" value="事務費" placeholder="項目名(10文字)" oninput="triggerAutoSave();">
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="item-admin" class="border-b border-gray-400 w-16 text-right font-medium shrink sum-group-2 text-xs" placeholder="0" oninput="formatAndCalcFinancials(this); triggerAutoSave();" onblur="formatInput(this);">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between font-black text-sm border-t-2 border-black pt-1">
+                        <span class="shrink-0 text-xs">合　計</span>
+                        <div class="flex items-center gap-1">
+                            <div class="w-12"></div>
+                            <span class="w-2"></span>
+                            <div class="w-8"></div>
+                            <span class="w-3"></span>
+                            <input type="text" id="grand-total-amount" class="border-b-2 border-black w-16 text-right font-black text-xs" readonly placeholder="0">
+                            <span class="shrink-0 text-xs w-4 text-left">円</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- 提出履歴管理モーダル -->
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-5 m-4">
+            <div class="flex justify-between items-center border-b pb-3 mb-3">
+                <h3 class="text-base font-bold text-slate-800">提出・保存履歴管理</h3>
+                <button onclick="closeHistoryModal();" class="text-slate-500 hover:text-slate-700 font-bold text-sm">✕ 閉じる</button>
+            </div>
+            <div id="history-list-container" class="space-y-2 max-h-96 overflow-y-auto">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dialog (本人確認ダイアログ) -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-indigo-600 px-6 py-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    ダウンロード前の本人確認
+                </h3>
+                <button id="btn-close-modal" class="text-indigo-200 hover:text-white transition text-lg">✕</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <p id="modal-desc" class="text-xs text-slate-600 leading-relaxed">
+                    ファイルをダウンロードする前に、ユーザーIDと氏名を入力してください。
+                </p>
+
+                <!-- Input Fields -->
+                <div class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                        <label for="modal-user-id" class="block text-xs font-bold text-slate-700 mb-1">
+                            ユーザーID <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="modal-user-id" placeholder="例: USR-10023" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                    </div>
+
+                    <div>
+                        <label for="modal-user-name" class="block text-xs font-bold text-slate-700 mb-1">
+                            氏名 (名前) <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="modal-user-name" placeholder="例: 山田 太郎" 
+                            class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                    </div>
+                </div>
+
+                <div id="modal-error-msg" class="hidden text-xs text-rose-600 bg-rose-50 p-2.5 rounded border border-rose-200">
+                    ユーザーIDと氏名を両方入力してください。
+                </div>
+            </div>
+
+            <!-- Modal Footer (Buttons) -->
+            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex flex-wrap justify-end gap-2">
+                <button id="btn-no-change" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs px-4 py-2.5 rounded-md transition">
+                    変更なし
+                </button>
+                <button id="btn-submit-input" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-md shadow transition">
+                    入力して保存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+        let autoSaveTimer = null;
+        let recognition = null;
+        let isListening = false;
+        let lastFocusedElement = null;
+        let dataID = null;
+        let isMobileLayout = false;
+        let currentFormDataCache = {};
+
+        const STORAGE_KEY = 'saved_user_info';
+        const LS_CURRENT_KEY = 'machida_sjc_current_report';
+        const LS_HISTORY_KEYS_LIST = 'machida_sjc_report_history_keys';
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            initReport();
+            const urlParams = new URLSearchParams(window.location.search);
+            dataID = urlParams.get('dataID');
+            if (dataID) {
+                openModal();
+            }
+        });
+
+        // 画面の向きやサイズが変更されたときにスマホ入力モードの幅・レイアウトを自動調整
+        window.addEventListener('resize', () => {
+            if (!isMobileLayout) return;
+            const printArea = document.getElementById('report-print-area');
+            if (!printArea) return;
+
+            const headerTopContainer = document.getElementById('header-top-container');
+            const headerSelectorsContainer = document.getElementById('header-selectors-container');
+            const mainGridInfo = document.getElementById('main-grid-info');
+            const tablesWrapper = document.getElementById('report-tables-wrapper');
+
+            // 画面が横向き（幅 > 高さ）かどうかを判定
+            if (window.innerWidth > window.innerHeight) {
+                printArea.classList.remove('max-w-md');
+                printArea.classList.add('max-w-full', 'is-landscape');
+
+                // ★横置き時：ヘッダーを1行にする
+                if (headerTopContainer) {
+                    headerTopContainer.classList.remove('flex-col', 'items-start', 'gap-2');
+                    headerTopContainer.classList.add('flex-row', 'items-end');
+                }
+                if (headerSelectorsContainer) {
+                    headerSelectorsContainer.classList.remove('w-full', 'justify-between');
+                }
+
+                // ★横置き時：カレンダー（tablesWrapper）を上に、契約の箱（mainGridInfo）を下に順序入れ替え
+                if (printArea && mainGridInfo && tablesWrapper) {
+                    printArea.insertBefore(tablesWrapper, mainGridInfo);
+                }
+            } else {
+                printArea.classList.remove('max-w-full', 'is-landscape');
+                printArea.classList.add('max-w-md');
+
+                // 縦置き時：ヘッダーを縦2行に戻す
+                if (headerTopContainer) {
+                    headerTopContainer.classList.add('flex-col', 'items-start', 'gap-2');
+                    headerTopContainer.classList.remove('flex-row', 'items-end');
+                }
+                if (headerSelectorsContainer) {
+                    headerSelectorsContainer.classList.add('w-full', 'justify-between');
+                }
+
+                // 縦置き時：元の順序（契約の箱を上、カレンダーを下）に戻す
+                if (printArea && mainGridInfo && tablesWrapper) {
+                    printArea.insertBefore(mainGridInfo, tablesWrapper);
+                }
+            }
+        });
+
+        function toggleLayoutMode() {
+            // モード切り替え前に全入力データを最新状態で集計してキャッシュ保持
+            currentFormDataCache = collectFormData();
+            isMobileLayout = !isMobileLayout;
+            applyLayoutMode();
+            restoreFormData(currentFormDataCache);
+            saveToLocalStorage(false);
+        }
+
+        function applyLayoutMode() {
+            const printArea = document.getElementById('report-print-area');
+            const toggleText = document.getElementById('layout-toggle-text');
+            const toggleBtn = document.getElementById('layout-toggle-btn');
+            const quickBox = document.getElementById('mobile-quick-input-box');
+            const tablesWrapper = document.getElementById('report-tables-wrapper');
+            const mainGridInfo = document.getElementById('main-grid-info');
+            const mainGridBottom = document.getElementById('main-grid-bottom');
+            const tableLeft = document.getElementById('report-table-left');
+            const tableRight = document.getElementById('report-table-right');
+
+            const boxWorkContent = document.getElementById('box-work-content'); 
+            const boxContractInfo = document.getElementById('box-contract-info'); 
+            const boxSecretariat = document.getElementById('box-secretariat'); 
+            const boxFinancials = document.getElementById('box-financials');   
+            const boxConfirmation = boxFinancials ? boxFinancials.querySelector('.border.border-black.p-1\\.5') : null;
+            
+            const badgeModeText = document.getElementById('badge-mode-text');
+            const headerTopContainer = document.getElementById('header-top-container');     // ★追加
+            const headerSelectorsContainer = document.getElementById('header-selectors-container'); // ★追加
+
+            if (isMobileLayout) {
+                toggleText.textContent = "📄 標準表示(書類形式)へ";
+                toggleBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                toggleBtn.classList.add('bg-slate-700', 'hover:bg-slate-800');
+
+                if (badgeModeText) badgeModeText.textContent = "入力用"; 
+
+                printArea.classList.remove('max-w-[192mm]', 'min-w-[700px]', 'p-[8mm]');
+                printArea.style.minHeight = 'auto';
+
+                // 起動時の向きに応じた処理
+                if (window.innerWidth > window.innerHeight) {
+                    printArea.classList.add('max-w-full', 'is-landscape', 'w-full', 'p-2');
+                    if (headerTopContainer) {
+                        headerTopContainer.classList.remove('flex-col', 'items-start', 'gap-2');
+                        headerTopContainer.classList.add('flex-row', 'items-end');
+                    }
+                    if (headerSelectorsContainer) {
+                        headerSelectorsContainer.classList.add('w-full', 'justify-between');
+                    }
+                    if (printArea && mainGridInfo && tablesWrapper) {
+                        printArea.insertBefore(tablesWrapper, mainGridInfo);
+                    }
+                } else {
+                    printArea.classList.add('max-w-md', 'w-full', 'p-2');
+                    if (headerTopContainer) {
+                        headerTopContainer.classList.add('flex-col', 'items-start', 'gap-2');
+                        headerTopContainer.classList.remove('flex-row', 'items-end');
+                    }
+                    if (headerSelectorsContainer) {
+                        headerSelectorsContainer.classList.remove('w-full', 'justify-between');
+                    }
+                    if (printArea && mainGridInfo && tablesWrapper) {
+                        printArea.insertBefore(mainGridInfo, tablesWrapper);
+                    }
+                }
+
+                quickBox.classList.remove('hidden');
+
+                if (boxWorkContent) boxWorkContent.classList.add('hidden');
+
+                mainGridInfo.classList.remove('grid-cols-2');
+                mainGridInfo.classList.add('grid-cols-1');
+                if (boxContractInfo) boxContractInfo.classList.remove('hidden'); 
+
+                mainGridBottom.classList.remove('hidden', 'grid-cols-2');
+                mainGridBottom.classList.add('grid-cols-1');
+                if (boxSecretariat) boxSecretariat.classList.add('hidden');
+
+                if (boxConfirmation) boxConfirmation.classList.add('hidden');
+
+                if (boxWorkContent) {
+                    boxWorkContent.classList.remove('hidden', 'h-36', 'print:h-32');
+                    boxWorkContent.classList.add('h-36', 'mt-2');
+                    mainGridBottom.appendChild(boxWorkContent); 
+                }
+
+                tablesWrapper.classList.remove('flex');
+                tablesWrapper.classList.add('block');
+                tableLeft.classList.remove('w-1/2', '-mr-[1px]');
+                tableLeft.classList.add('w-full', 'mb-2');
+                tableRight.classList.add('hidden');
+
+                populateMobileQuickDays();
+            } else {
+                toggleText.textContent = "📱 スマホ入力モードへ";
+                toggleBtn.classList.remove('bg-slate-700', 'hover:bg-slate-800');
+                toggleBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
+                if (badgeModeText) badgeModeText.textContent = "提出用"; 
+
+                // ★標準表示時はヘッダーを元の横並びに戻す
+                if (headerTopContainer) {
+                    headerTopContainer.classList.remove('flex-col', 'items-start', 'gap-2');
+                    headerTopContainer.classList.add('flex-row', 'items-end');
+                }
+                if (headerSelectorsContainer) {
+                    headerSelectorsContainer.classList.remove('w-full', 'justify-between');
+                }
+
+                printArea.classList.add('max-w-[192mm]', 'min-w-[700px]', 'p-[8mm]');
+                printArea.classList.remove('max-w-md', 'p-2');
+                printArea.style.minHeight = '282mm';
+
+                quickBox.classList.add('hidden');
+
+                if (boxWorkContent) {
+                    boxWorkContent.classList.remove('mt-2');
+                    boxWorkContent.classList.add('h-36', 'print:h-32');
+                    mainGridInfo.insertBefore(boxWorkContent, mainGridInfo.firstChild);
+                    boxWorkContent.classList.remove('hidden');
+                }
+
+                mainGridInfo.classList.remove('grid-cols-1');
+                mainGridInfo.classList.add('grid-cols-2');
+                
+                mainGridBottom.classList.remove('hidden', 'grid-cols-1');
+                mainGridBottom.classList.add('grid-cols-2');
+                if (boxSecretariat) boxSecretariat.classList.remove('hidden');
+                if (boxConfirmation) boxConfirmation.classList.remove('hidden');
+
+                tablesWrapper.classList.remove('block');
+                tablesWrapper.classList.add('flex');
+                tableLeft.classList.add('w-1/2', '-mr-[1px]');
+                tableLeft.classList.remove('w-full', 'mb-2');
+                tableRight.classList.remove('hidden');
+                tableRight.classList.add('w-1/2');
+            }
+            updateCalendar();
+        }
+
+        function populateMobileQuickDays() {
+            const select = document.getElementById('mobile-quick-day');
+            if (!select) return;
+            select.innerHTML = '';
+            const year = parseInt(document.getElementById('report-year').value);
+            const month = parseInt(document.getElementById('report-month').value);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const opt = document.createElement('option');
+                opt.value = d;
+                const w = weekdays[new Date(year, month - 1, d).getDay()];
+                opt.textContent = `${d}日 (${w})`;
+                select.appendChild(opt);
+            }
+            select.onchange = loadMobileDayDataToQuickInput;
+            loadMobileDayDataToQuickInput();
+        }
+
+        function loadMobileDayDataToQuickInput() {
+            const day = document.getElementById('mobile-quick-day').value;
+            const format = parseInt(document.getElementById('report-format').value);
+            
+            const val1 = document.getElementById('mobile-val-1');
+            const val2 = document.getElementById('mobile-val-2');
+            const val3 = document.getElementById('mobile-val-3');
+            const l1 = document.getElementById('mobile-label-1');
+            const l2 = document.getElementById('mobile-label-2');
+            const l3 = document.getElementById('mobile-label-3');
+            const c3 = document.getElementById('mobile-field-container-3');
+
+            if (format === 1) {
+                l1.textContent = '摘要・場所';
+                l2.textContent = '評価・件数';
+                c3.classList.add('hidden');
+                val1.value = document.getElementById(`f1-text-${day}`)?.value || '';
+                val2.value = document.getElementById(`f1-eval-${day}`)?.value || '';
+            } else if (format === 2) {
+                l1.textContent = '件数1';
+                l2.textContent = '件数2';
+                c3.classList.add('hidden');
+                val1.value = document.getElementById(`f2-num1-${day}`)?.value || '';
+                val2.value = document.getElementById(`f2-num2-${day}`)?.value || '';
+            } else if (format === 3) {
+                l1.textContent = '開始時刻';
+                l2.textContent = '終了時刻';
+                l3.textContent = '休息時間';
+                c3.classList.remove('hidden');
+                val1.value = document.getElementById(`f3-start-${day}`)?.value || '';
+                val2.value = document.getElementById(`f3-end-${day}`)?.value || '';
+                val3.value = document.getElementById(`f3-break-${day}`)?.value || '';
+            } else if (format === 4) {
+                l1.textContent = '開始1 / 終了1';
+                l2.textContent = '開始2 / 終了2';
+                c3.classList.add('hidden');
+                val1.value = (document.getElementById(`f4-start1-${day}`)?.value || '') + ' ' + (document.getElementById(`f4-end1-${day}`)?.value || '');
+                val2.value = (document.getElementById(`f4-start2-${day}`)?.value || '') + ' ' + (document.getElementById(`f4-end2-${day}`)?.value || '');
+            }
+        }
+
+        function applyMobileQuickInput() {
+            const day = document.getElementById('mobile-quick-day').value;
+            const format = parseInt(document.getElementById('report-format').value);
+            const val1 = document.getElementById('mobile-val-1').value;
+            const val2 = document.getElementById('mobile-val-2').value;
+            const val3 = document.getElementById('mobile-val-3').value;
+
+            if (format === 1) {
+                const el1 = document.getElementById(`f1-text-${day}`);
+                const el2 = document.getElementById(`f1-eval-${day}`);
+                if (el1) el1.value = val1;
+                if (el2) el2.value = val2;
+            } else if (format === 2) {
+                const el1 = document.getElementById(`f2-num1-${day}`);
+                const el2 = document.getElementById(`f2-num2-${day}`);
+                if (el1) el1.value = val1;
+                if (el2) el2.value = val2;
+            } else if (format === 3) {
+                const el1 = document.getElementById(`f3-start-${day}`);
+                const el2 = document.getElementById(`f3-end-${day}`);
+                const el3 = document.getElementById(`f3-break-${day}`);
+                if (el1) el1.value = val1;
+                if (el2) el2.value = val2;
+                if (el3) el3.value = val3;
+            }
+
+            calculateTotals();
+            triggerAutoSave();
+
+            const daySelect = document.getElementById('mobile-quick-day');
+            if (daySelect.selectedIndex < daySelect.options.length - 1) {
+                daySelect.selectedIndex += 1;
+                loadMobileDayDataToQuickInput();
+            }
+        }
+
+        function clearMobileDayInput() {
+            const day = document.getElementById('mobile-quick-day').value;
+            const format = parseInt(document.getElementById('report-format').value);
+            if (format === 1) {
+                if (document.getElementById(`f1-text-${day}`)) document.getElementById(`f1-text-${day}`).value = '';
+                if (document.getElementById(`f1-eval-${day}`)) document.getElementById(`f1-eval-${day}`).value = '';
+            } else if (format === 2) {
+                if (document.getElementById(`f2-num1-${day}`)) document.getElementById(`f2-num1-${day}`).value = '';
+                if (document.getElementById(`f2-num2-${day}`)) document.getElementById(`f2-num2-${day}`).value = '';
+            } else if (format === 3) {
+                if (document.getElementById(`f3-start-${day}`)) document.getElementById(`f3-start-${day}`).value = '';
+                if (document.getElementById(`f3-end-${day}`)) document.getElementById(`f3-end-${day}`).value = '';
+                if (document.getElementById(`f3-break-${day}`)) document.getElementById(`f3-break-${day}`).value = '';
+            }
+            loadMobileDayDataToQuickInput();
+            calculateTotals();
+            triggerAutoSave();
+        }
+
+        // 行にデータが入っているかの判定関数
+        function hasDataInDayRow(day, format, data = null) {
+            const inputs = data ? data.inputs : null;
+            if (format === 1) {
+                const t = inputs ? inputs[`f1-text-${day}`] : document.getElementById(`f1-text-${day}`)?.value;
+                const e = inputs ? inputs[`f1-eval-${day}`] : document.getElementById(`f1-eval-${day}`)?.value;
+                return !!((t && t.trim()) || (e && e.trim()));
+            } else if (format === 2) {
+                const n1 = inputs ? inputs[`f2-num1-${day}`] : document.getElementById(`f2-num1-${day}`)?.value;
+                const n2 = inputs ? inputs[`f2-num2-${day}`] : document.getElementById(`f2-num2-${day}`)?.value;
+                return !!((n1 && n1.trim()) || (n2 && n2.trim()));
+            } else if (format === 3) {
+                const s = inputs ? inputs[`f3-start-${day}`] : document.getElementById(`f3-start-${day}`)?.value;
+                const e = inputs ? inputs[`f3-end-${day}`] : document.getElementById(`f3-end-${day}`)?.value;
+                const b = inputs ? inputs[`f3-break-${day}`] : document.getElementById(`f3-break-${day}`)?.value;
+                return !!((s && s.trim()) || (e && e.trim()) || (b && b.trim()));
+            } else if (format === 4) {
+                const s1 = inputs ? inputs[`f4-start1-${day}`] : document.getElementById(`f4-start1-${day}`)?.value;
+                const e1 = inputs ? inputs[`f4-end1-${day}`] : document.getElementById(`f4-end1-${day}`)?.value;
+                const s2 = inputs ? inputs[`f4-start2-${day}`] : document.getElementById(`f4-start2-${day}`)?.value;
+                const e2 = inputs ? inputs[`f4-end2-${day}`] : document.getElementById(`f4-end2-${day}`)?.value;
+                return !!((s1 && s1.trim()) || (e1 && e1.trim()) || (s2 && s2.trim()) || (e2 && e2.trim()));
+            }
+            return false;
+        }
+
+        function getSavedUserInfo() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                console.error('localStorage読み込みエラー:', e);
+                return null;
+            }
+        }
+
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const modalUserId = document.getElementById('modal-user-id');
+        const modalUserName = document.getElementById('modal-user-name');
+        const btnNoChange = document.getElementById('btn-no-change');
+        const btnSubmitInput = document.getElementById('btn-submit-input');
+        const modalErrorMsg = document.getElementById('modal-error-msg');
+        const modalDesc = document.getElementById('modal-desc');
+
+        function openModal() {
+            const savedInfo = getSavedUserInfo();
+            modalErrorMsg.classList.add('hidden');
+
+            if (savedInfo && (savedInfo.id || savedInfo.name)) {
+                modalUserId.value = savedInfo.id || '';
+                modalUserName.value = savedInfo.name || '';
+                btnNoChange.classList.remove('hidden');
+                modalDesc.innerHTML = '以前に保存されたユーザー情報が見つかりました。<br>このまま使用する場合は「変更なし」を、情報を更新する場合は入力後「入力して保存」を押してください。';
+            } else {
+                modalUserId.value = '';
+                modalUserName.value = '';
+                btnNoChange.classList.add('hidden');
+                modalDesc.textContent = '初回のダウンロードです。ユーザーIDと氏名を入力してください。情報はlocalStorageに保存されます。';
+            }
+            modalBackdrop.classList.remove('hidden');
+        }
+
+        async function closeModal() {
+            if (dataID) {
+                const filename = `Report${dataID}.json`;
+                const SUPABASE_URL = "https://ymchwhuubdvokkkyflkb.supabase.co";
+                const SUPABASE_KEY = "sb_publishable_SbcqGr8rFgkGWhFwoSwNGA_xFJjdMtN";
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                try {
+                    const { data, error } = await supabaseClient
+                        .storage
+                        .from("ms_reports")
+                        .download(filename);
+                
+                    // 1. Supabase側でエラーが出た場合は即座にスロー
+                    if (error) throw error;
+                
+                    // 2. データが空ではないかチェック
+                    if (!data) {
+                        throw new Error("データが空（null）です。");
+                    }
+                
+                    // Blobからテキストを抽出
+                    const text = await data.text();
+                    
+                    // 3. JSONパースの失敗に備える
+                    let json;
+                    try {
+                        json = JSON.parse(text);
+                        json.memberNo = modalUserId.value.trim();
+                        json.memberName = modalUserName.value.trim();
+                        json.month = document.getElementById('report-month').value;
+                    } catch (parseError) {
+                        throw new Error(`JSONファイルの解析に失敗しました: ${parseError.message}`);
+                    }
+                
+                    // 復元処理
+                    restoreFormData(json);
+                    saveToLocalStorage(false);
+                
+                } catch (error) {
+                    // 4. エラーの原因に応じてメッセージを詳細にする
+                    console.error(`就業報告書の読み込みに失敗しました:`, error);
+                    
+                    // 必要に応じて、ユーザーへの画面表示用（例）
+                    alert(`読み込み失敗: ${error.message || error.error_description}`);
+                }
+            } else {
+                const memberNoEl = document.getElementById('member-no');
+                const memberNameEl = document.getElementById('member-name');
+                if (memberNoEl) memberNoEl.value = modalUserId.value.trim();
+                if (memberNameEl) memberNameEl.value = modalUserName.value.trim();
+            }
+            modalBackdrop.classList.add('hidden');
+        }
+
+        btnSubmitInput.addEventListener('click', () => {
+            const idVal = modalUserId.value.trim();
+            const nameVal = modalUserName.value.trim();
+
+            if (!idVal || !nameVal) {
+                modalErrorMsg.classList.remove('hidden');
+                return;
+            }
+
+            const newUserInfo = {
+                id: idVal,
+                name: nameVal,
+                updatedAt: new Date().toLocaleString('ja-JP')
+            };
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newUserInfo));
+            closeModal();
+        });
+
+        btnNoChange.addEventListener('click', () => {
+            const savedInfo = getSavedUserInfo();
+            if (savedInfo) {
+                closeModal();
+            } else {
+                modalErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        btnCloseModal.addEventListener('click', closeModal);
+        modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) closeModal();
+        });
+
+        function initReport() {
+            const yearSelect = document.getElementById('report-year');
+            const monthSelect = document.getElementById('report-month');
+
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            yearSelect.innerHTML = '';
+            monthSelect.innerHTML = '';
+
+            for (let y = 2020; y <= 2035; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                if (y === currentYear) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+
+            for (let m = 1; m <= 12; m++) {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                if (m === currentMonth) opt.selected = true;
+                monthSelect.appendChild(opt);
+            }
+
+            document.addEventListener('focusin', (e) => {
+                if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                    lastFocusedElement = e.target;
+                }
+            });
+
+            updateCalendar();
+            loadFromLocalStorage();
+            initSpeechRecognition();
+        }
+
+        function triggerAutoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveToLocalStorage(false);
+            }, 1000);
+        }
+
+        function formatNumber(val) {
+            if (val === '' || val === null || isNaN(val)) return '';
+            const num = parseFloat(val);
+            if (isNaN(num)) return '';
+            return num.toLocaleString('ja-JP');
+        }
+
+        function parseNum(str) {
+            if (!str) return 0;
+            const cleaned = str.toString().replace(/,/g, '').trim();
+            const val = parseFloat(cleaned);
+            return isNaN(val) ? 0 : val;
+        }
+
+        function formatInput(input) {
+            const val = parseNum(input.value);
+            if (input.value.trim() !== '' && !isNaN(val)) {
+                input.value = formatNumber(val);
+            }
+            triggerAutoSave();
+        }
+
+        function parseTimeToMinutes(str) {
+            if (!str) return null;
+            let val = str.toString().trim().replace('：', ':');
+            if (!val) return null;
+
+            let h = 0, m = 0;
+
+            if (val.includes('正午')) {
+                h = 12;
+                return { minutes: 12 * 60, h: h, m: m, formatted: '12:00' };
+            }
+
+            if (val.includes(':')) {
+                const parts = val.split(':');
+                h = parseInt(parts[0], 10) || 0;
+                m = parseInt(parts[1], 10) || 0;
+            } else if (/^\d{1,4}$/.test(val)) {
+                if (val.length <= 2) {
+                    h = parseInt(val, 10);
+                    m = 0;
+                } else if (val.length === 3) {
+                    h = parseInt(val.substring(0, 1), 10);
+                    m = parseInt(val.substring(1), 10);
+                } else if (val.length === 4) {
+                    h = parseInt(val.substring(0, 2), 10);
+                    m = parseInt(val.substring(2), 10);
+                }
+            } else {
+                return null;
+            }
+
+            if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+            return { minutes: h * 60 + m, h: h, m: m, formatted: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}` };
+        }
+
+        function parseMinutes(str) {
+            if (!str) return null;
+            let val = str.toString().trim().replace('分', '');
+            if (!val) return null;
+            let m = parseInt(val, 10) || 0;
+
+            return { minutes: m, formatted: `${String(m)}分` };
+        }
+
+        function handleTimeBlur(input) {
+            const res = parseTimeToMinutes(input.value);
+            if (res) {
+                input.value = res.formatted;
+            }
+            calculateTotals();
+            triggerAutoSave();
+        }
+
+        function formatAndCalcFinancials(input) {
+            calculateFinancials();
+        }
+
+        function ensureOptionExists(select, value) {
+            if (!value || !select) return;
+            let exists = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === value) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                const opt = document.createElement('option');
+                opt.value = value;
+                opt.textContent = value;
+                select.appendChild(opt);
+            }
+        }
+
+        function handleFormat1EvalTypeChange(source) {
+            if (!source) return;
+            const val = source.value;
+            const id = source.id;
+            const evalType1 = document.getElementById('f1-eval-type-1');
+            const evalType2 = document.getElementById('f1-eval-type-2');
+            if (id === 'f1-eval-type-2' && evalType1 && evalType1.value !== val) {
+                evalType1.value = val;
+                handleFormat1ItemName1(val);
+            }
+            if (id === 'f1-eval-type-1' && evalType2 && evalType2.value !== val) {
+                evalType2.value = val;
+                handleFormat1ItemName1(val);
+            }
+            updateTopItemRow();
+            calculateTotals();
+            triggerAutoSave();
+        }
+
+        function handleFormat1ItemName1(val) {
+            const itemName0 = document.getElementById('item-name-0');
+            const itemName1 = document.getElementById('item-name-1');
+            if (itemName1) {
+                if (val === '件数') {
+                    if (itemName0) itemName0.value = val;
+                    itemName1.value = '件数';
+                } else if (val === '配分金') {
+                    if (itemName0) itemName0.value = '配分金';
+                    itemName1.value = val;
+                } else {
+                    if (itemName0) itemName0.value = val;
+                    itemName1.value = '日数';
+                }
+            }
+            for (let i = 1; i <= 31; i++) {
+                const textInput = document.getElementById(`f1-text-${i}`);
+                const evalField = document.getElementById(`f1-eval-${i}`);
+                if (textInput) textInput.value = '';
+                if (evalField) evalField.value = '';
+            }
+        }
+
+        function handleFormat3EvalTypeChange(source) {
+            const val = source ? source.value : '';
+            if (!val) return;
+            const evalType1 = document.getElementById('f3-eval-type-1');
+            const evalType2 = document.getElementById('f3-eval-type-2');
+            if (evalType1) evalType1.value = val;
+            if (evalType2) evalType2.value = val;
+
+            const itemName0 = document.getElementById('item-name-0');
+            const itemName1 = document.getElementById('item-name-1');
+            if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
+                if (val === '日数') {
+                    if (itemName0) itemName0.value = val;
+                    itemName1.value = '日数';
+                } else {
+                    if (itemName0) itemName0.value = val;
+                    itemName1.value = '時間';
+                }
+            }
+            calculateTotals();
+            triggerAutoSave();
+        }
+
+        function handleFormat4EvalTypeChange(source) {
+            const val = source ? source.value : '';
+            if (!val) return;
+            const evalType1 = document.getElementById('f4-eval-type-1');
+            const evalType2 = document.getElementById('f4-eval-type-2');
+            if (evalType1) evalType1.value = val;
+            if (evalType2) evalType2.value = val;
+
+            const itemName0 = document.getElementById('item-name-0');
+            const itemName1 = document.getElementById('item-name-1');
+            if (itemName1 && !document.getElementById('is-locked-checkbox').checked) {
+                if (val === '日数') {
+                    if (itemName0) itemName0.value = val;
+                    itemName1.value = '日数';
+                } else {
+                    if (itemName0) itemName0.value = val;
+                    itemName1.value = '時間';
+                }
+            }
+            calculateTotals();
+            triggerAutoSave();
+        }
+
+        function handleFormat2HeaderInput(colIdx, inputEl) {
+            const val = inputEl.value;
+            const h1 = document.getElementById(`f2-h1-col${colIdx}`);
+            const h2 = document.getElementById(`f2-h2-col${colIdx}`);
+            if (h1) h1.value = val;
+            if (h2) h2.value = val;
+
+            const targetInput = document.getElementById(`item-name-${colIdx}`);
+            if (targetInput) targetInput.value = val;
+            triggerAutoSave();
+        }
+
+        function handleTableHeaderInput(formatType, index, inputEl) {
+            const val = inputEl.value;
+            if (formatType === 1) {
+                const target = document.getElementById(`f1-h2-${index}`);
+                if (target) target.value = val;
+            } else if (formatType === 2) {
+                handleFormat2HeaderInput(index, inputEl);
+            }
+            triggerAutoSave();
+        }
+
+        function getInputData(fday) {
+            const format = parseInt(document.getElementById('report-format').value);
+            const year = parseInt(document.getElementById('report-year').value);
+            const month = parseInt(document.getElementById('report-month').value);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const day = fday.value;
+            const isValid = (0 < day && day <= daysInMonth);
+            const w = isValid ? weekdays[new Date(year, month - 1, day).getDay()] : '';
+
+            if (format === 1) {
+                const t = document.getElementById(`f1-text-${day}`)?.value;
+                const v = document.getElementById(`f1-eval-${day}`)?.value;
+                document.getElementById(`f1-wday-0`).value = w;
+                if (t) {
+                    document.getElementById(`f1-text-0`).value = t;
+                } else {
+                    document.getElementById(`f1-text-${day}`).value = document.getElementById(`f1-text-0`).value;
+                }
+                if (v) {
+                    document.getElementById(`f1-eval-0`).value = v;
+                } else {
+                    document.getElementById(`f1-eval-${day}`).value = getElementById(`f1-eval-0`).value;
+                }
+            } else if (format === 2) {
+                const n1 = document.getElementById(`f2-num1-${day}`)?.value;
+                const n2 = document.getElementById(`f2-num2-${day}`)?.value;
+                const v = document.getElementById(`f2-eval-${day}`)?.value;
+                document.getElementById(`f2-wday-0`).value = w;
+                if (n1) {
+                    document.getElementById(`f2-num1-0`).value = n1;
+                } else {
+                    document.getElementById(`f2-num1-${day}`).value = document.getElementById(`f2-num1-0`).value;
+                }
+                if (n2) {
+                    document.getElementById(`f2-num2-0`).value = n2;
+                } else {
+                    document.getElementById(`f2-num2-${day}`).value = document.getElementById(`f2-num2-0`).value;
+                }
+                    document.getElementById(`f2-eval-0`).value = v;
+            } else if (format === 3) {
+                const s = document.getElementById(`f3-start-${day}`)?.value;
+                const e = document.getElementById(`f3-end-${day}`)?.value;
+                const b = document.getElementById(`f3-break-${day}`)?.value;
+                const v = document.getElementById(`f3-eval-${day}`)?.value;
+                document.getElementById(`f3-wday-0`).value = w;
+                if (s) {
+                    document.getElementById(`f3-start-0`).value = s;
+                } else {
+                    document.getElementById(`f3-start-${day}`).value = document.getElementById(`f3-start-0`).value;
+                }
+                if (e) {
+                    document.getElementById(`f3-end-0`).value = e;
+                } else {
+                    document.getElementById(`f3-end-${day}`).value = document.getElementById(`f3-end-0`).value;
+                }
+                if (b) {
+                    document.getElementById(`f3-break-0`).value = b;
+                } else {
+                    document.getElementById(`f3-break-${day}`).value = document.getElementById(`f3-break-0`).value;
+                }
+                if (v) {
+                    document.getElementById(`f3-eval-0`).value = v;
+                } else {
+                    document.getElementById(`f3-eval-${day}`).value = document.getElementById(`f3-eval-0`).value;
+                }
+            } else if (format === 4) {
+                const s1 = document.getElementById(`f4-start1-${day}`)?.value;
+                const e1 = document.getElementById(`f4-end1-${day}`)?.value;
+                const s2 = document.getElementById(`f4-start2-${day}`)?.value;
+                const e2 = document.getElementById(`f4-end2-${day}`)?.value;
+                const v = document.getElementById(`f4-eval-${day}`)?.value;
+                document.getElementById(`f4-wday-0`).value = w;
+                if (s1) {
+                    document.getElementById(`f4-start1-0`).value = s1;
+                } else {
+                    document.getElementById(`f4-start1-${day}`).value = document.getElementById(`f4-start1-0`).value;
+                }
+                if (e1) {
+                    document.getElementById(`f4-end1-0`).value = e1;
+                } else {
+                    document.getElementById(`f4-end1-${day}`).value = document.getElementById(`f4-end1-0`).value;
+                }
+                if (s2) {
+                    document.getElementById(`f4-start2-0`).value = s2;
+                } else {
+                    document.getElementById(`f4-start2-${day}`).value = document.getElementById(`f4-start2-0`).value;
+                }
+                if (e2) {
+                    document.getElementById(`f4-end2-0`).value = e2;
+                } else {
+                    document.getElementById(`f4-end2-${day}`).value = document.getElementById(`f4-end2-0`).value;
+                }
+                if (v) {
+                    document.getElementById(`f4-eval-0`).value = v;
+                } else {
+                    document.getElementById(`f4-eval-${day}`).value = document.getElementById(`f4-eval-0`).value;
+                }
+            }
+            calculateTotals();
+            currentFormDataCache = collectFormData(); // ★ここでキャッシュを最新に更新
+            fixMobileLayout();                        // ★その後にレイアウトを更新
+            triggerAutoSave();
+        }
+
+        function fixMobileLayout() {
+            // スマホ表示時: データが存在する日のみを表示
+            const format = parseInt(document.getElementById('report-format').value);
+            for (let d = 1; d <= 31; d++) {
+                const tr = document.getElementById(`row-id-${d}`);
+                if (tr) {
+                    if (hasDataInDayRow(d, format, currentFormDataCache)) {
+                        tr.hidden = false;
+                    } else {
+                        tr.hidden = true;
+                    }
+                }
+            }
+        }
+
+        function putInputData() {
+            const format = parseInt(document.getElementById('report-format').value);
+            const year = parseInt(document.getElementById('report-year').value);
+            const month = parseInt(document.getElementById('report-month').value);
+            const fday = document.getElementById('f-day');
+            const day = fday.value;
+
+            if (format === 1) {
+                const t = document.getElementById(`f1-text-0`)?.value;
+                const v = document.getElementById(`f1-eval-0`)?.value;
+                document.getElementById(`f1-text-${day}`).value = t? t : '';
+                document.getElementById(`f1-eval-${day}`).value = v? v : '';
+            } else if (format === 2) {
+                const n1 = document.getElementById(`f2-num1-0`)?.value;
+                const n2 = document.getElementById(`f2-num2-0`)?.value;
+                document.getElementById(`f2-num1-${day}`).value = n1 ? n1 : '';
+                document.getElementById(`f2-num2-${day}`).value = n2 ? n2 : '';
+            } else if (format === 3) {
+                const s = document.getElementById(`f3-start-0`)?.value;
+                const e = document.getElementById(`f3-end-0`)?.value;
+                const b = document.getElementById(`f3-break-0`)?.value;
+                document.getElementById(`f3-start-${day}`).value = s ? s : '';
+                document.getElementById(`f3-end-${day}`).value = e ? e : '';
+                document.getElementById(`f3-break-${day}`).value = b ? b : '';
+            } else if (format === 4) {
+                const s1 = document.getElementById(`f4-start1-0`)?.value;
+                const e1 = document.getElementById(`f4-end1-0`)?.value;
+                const s2 = document.getElementById(`f4-start2-0`)?.value;
+                const e2 = document.getElementById(`f4-end2-0`)?.value;
+                document.getElementById(`f4-start1-${day}`).value = s1 ? s1 : '';
+                document.getElementById(`f4-end1-${day}`).value = e1 ? e1 : ''
+                document.getElementById(`f4-start2-${day}`).value = s2 ? s2 : '';
+                document.getElementById(`f4-end2-${day}`).value = e2 ? e2 : '';
+            }
+            calculateTotals();
+            currentFormDataCache = collectFormData(); // ★ここでキャッシュを最新に更新
+            fixMobileLayout();                        // ★その後にレイアウトを更新
+            triggerAutoSave();
+            getInputData(fday);
+        }
+
+        function calculateTotals() {
+            const format = parseInt(document.getElementById('report-format').value);
+
+            if (format === 1) {
+                const evalType = document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数';
+                for (let i = 1; i <= 31; i++) {
+                    const textInput = document.getElementById(`f1-text-${i}`);
+                    const evalField = document.getElementById(`f1-eval-${i}`);
+
+                    if (textInput && evalField) {
+                        const hasText = textInput.value.trim() !== '';
+                        if (hasText && evalType === '日数') {
+                            if (!evalField.value || evalField.dataset.autoGenerated === "true") {
+                                evalField.value = '1';
+                                evalField.dataset.autoGenerated = "true";
+                            }
+                        } else {
+                            if (evalField.dataset.autoGenerated === "true") {
+                                evalField.value = '';
+                                delete evalField.dataset.autoGenerated;
+                            }
+                        }
+                    }
+                }
+            } else if (format === 2) {
+                for (let i = 1; i <= 31; i++) {
+                    const rowN1 = document.getElementById(`f2-num1-${i}`);
+                    const rowN2 = document.getElementById(`f2-num2-${i}`);
+                    const evalField = document.getElementById(`f2-eval-${i}`);
+
+                    if (rowN1 && rowN2 && evalField) {
+                        const v1 = parseNum(rowN1.value);
+                        const v2 = parseNum(rowN2.value);
+                        const has1 = rowN1.value.trim() !== '';
+                        const has2 = rowN2.value.trim() !== '';
+
+                        if (has1 || has2) {
+                            evalField.value = formatNumber(v1 + v2);
+                        } else {
+                            evalField.value = '';
+                        }
+                    }
+                }
+
+                for (let colIdx = 1; colIdx <= 2; colIdx++) {
+                    let colSum = 0;
+                    let colHasNum = false;
+                    document.querySelectorAll(`#report-tables-wrapper .entry-f2-c${colIdx}`).forEach(input => {
+                        const v = parseNum(input.value);
+                        if (input.value.trim() !== '') {
+                            colSum += v;
+                            colHasNum = true;
+                        }
+                    });
+                    const totalField = document.getElementById(`f2-col-total-${colIdx}`);
+                    if (totalField) {
+                        totalField.value = colHasNum ? formatNumber(colSum) + '件' : '';
+                    }
+
+                    const countField = document.getElementById(`p${colIdx}-count`);
+                    if (countField) {
+                        countField.value = colHasNum ? formatNumber(colSum) : '';
+                    }
+                }
+            } else if (format === 3) {
+                const evalTypeEl = document.getElementById('f3-eval-type-1');
+                const evalType = evalTypeEl ? evalTypeEl.value : '時間';
+
+                for (let i = 1; i <= 31; i++) {
+                    const startInput = document.getElementById(`f3-start-${i}`);
+                    const endInput = document.getElementById(`f3-end-${i}`);
+                    const breakInput = document.getElementById(`f3-break-${i}`);
+                    const evalField = document.getElementById(`f3-eval-${i}`);
+
+                    if (startInput && endInput && evalField) {
+                        const sParsed = parseTimeToMinutes(startInput.value);
+                        const eParsed = parseTimeToMinutes(endInput.value);
+                        const bParsed = parseMinutes(breakInput.value);
+
+                        if (evalType === '時間') {
+                            if (!bParsed) {
+                                if (sParsed && eParsed) {
+                                    let diffMin = eParsed.minutes - sParsed.minutes;
+                                    let breakMin = 0;
+                                    if (diffMin < 0) {
+                                        diffMin += 12 * 60;
+                                        let h = eParsed.h + 12;
+                                        let m = eParsed.m;
+                                        endInput.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                    }
+
+                                    if (diffMin > 8 * 60) {
+                                        breakMin = 60;
+                                        diffMin -= 60;
+                                    } else if (diffMin >= 6 * 60 && diffMin <= 8 * 60) {
+                                        breakMin = 45;
+                                        diffMin -= 45;
+                                    }
+                                    if (diffMin < 0) diffMin = 0;
+                                    let hours = diffMin / 60;
+                                    breakInput.value = breakMin.toFixed(0) + '分';
+                                    evalField.value = hours.toFixed(2);
+                                } else {
+                                    breakInput.value = '';
+                                    evalField.value = '';
+                                } 
+                            }
+                            else {
+                                if (sParsed && eParsed) {
+                                    let diffMin = eParsed.minutes - sParsed.minutes - bParsed.minutes;
+                                    if (diffMin < 0) {
+                                        diffMin += 12 * 60;
+                                        let h = eParsed.h + 12;
+                                        let m = eParsed.m;
+                                        endInput.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                    }
+                                    let hours = diffMin / 60;
+                                    evalField.value = hours.toFixed(2);
+                                }
+                            }
+                        } else {
+                            if (sParsed || eParsed) {
+                                evalField.value = '1';
+                            } else {
+                                evalField.value = '';
+                            }
+                        }
+                    }
+                }
+            } else if (format === 4) {
+                const evalTypeEl = document.getElementById('f4-eval-type-1');
+                const evalType = evalTypeEl ? evalTypeEl.value : '時間';
+
+                for (let i = 1; i <= 31; i++) {
+                    const s1Input = document.getElementById(`f4-start1-${i}`);
+                    const e1Input = document.getElementById(`f4-end1-${i}`);
+                    const s2Input = document.getElementById(`f4-start2-${i}`);
+                    const e2Input = document.getElementById(`f4-end2-${i}`);
+                    const evalField = document.getElementById(`f4-eval-${i}`);
+
+                    if (s1Input && e1Input && s2Input && e2Input && evalField) {
+                        let pS1 = parseTimeToMinutes(s1Input.value);
+                        let pE1 = parseTimeToMinutes(e1Input.value);
+                        let pS2 = parseTimeToMinutes(s2Input.value);
+                        let pE2 = parseTimeToMinutes(e2Input.value);
+
+                        if (evalType === '時間') {
+                            let totalMinutes = 0;
+                            let hasAny = false;
+
+                            if (pS1 && pE1) {
+                                let m1 = pE1.minutes - pS1.minutes;
+                                if (m1 < 0 && m1 >= -12 * 60) {
+                                    m1 += 12 * 60;
+                                    let h = pE1.h + 12;
+                                    let m = pE1.m;
+                                    e1Input.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                } else if (m1 < -12 * 60) {
+                                    m1 += 24 * 60;
+                                    let h = pE1.h + 12;
+                                    let m = pE1.m;
+                                    e1Input.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                    pE1 = parseTimeToMinutes(e1Input.value);
+                                }
+
+                                if (m1 > 8 * 60) {
+                                    m1 -= 60;
+                                } else if (m1 >= 6 * 60 && m1 <= 8 * 60) {
+                                    m1 -= 45;
+                                }
+                                if (m1 < 0) m1 = 0;
+
+                                totalMinutes += m1;
+                                hasAny = true;
+                            }
+
+                            if (pS1 && pE1 && pS2) {
+                                let m0 = pS2.minutes - pE1.minutes;
+                                if (m0 < 0) {
+                                    m0 += 12 * 60;
+                                    let h = pS2.h + 12;
+                                    let m = pS2.m;
+                                    s2Input.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                    pS2 = parseTimeToMinutes(s2Input.value);
+                                }
+                            }
+
+                            if (pS1 && pE1 && pS2 && pE2) {
+                                let m2 = pE2.minutes - pS2.minutes;
+                                if (m2 < 0 && m2 >= -12 * 60) {
+                                    m2 += 12 * 60;
+                                    let h = pE2.h + 12;
+                                    let m = pE2.m;
+                                    e2Input.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                } else if (m2 < -12 * 60) {
+                                    m2 += 24 * 60;
+                                    let h = pE2.h + 12;
+                                    let m = pE2.m;
+                                    e2Input.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+                                }
+                                totalMinutes += m2;
+                                hasAny = true;
+                            }
+
+                            if (hasAny) {
+                                let hours = totalMinutes / 60;
+                                evalField.value = hours.toFixed(2);
+                            } else {
+                                evalField.value = '';
+                            }
+                        } else {
+                            if (pS1 || pE1 || pS2 || pE2) {
+                                evalField.value = '1';
+                            } else {
+                                evalField.value = '';
+                            }
+                        }
+                    }
+                }
+            }
+
+            const evalInputs = document.querySelectorAll('#report-tables-wrapper .eval-input');
+            let grandSum = 0;
+            let hasValidNumber = false;
+
+            evalInputs.forEach(input => {
+                const val = parseNum(input.value);
+                if (input.value.trim() !== '') {
+                    grandSum += val;
+                    hasValidNumber = true;
+                }
+            });
+
+            const grandTotalEvalEl = document.getElementById('grand-total-eval');
+            if (grandTotalEvalEl) {
+                const evalType = format === 1 ? (document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数') :
+                                 format === 3 ? (document.getElementById('f3-eval-type-1') ? document.getElementById('f3-eval-type-1').value : '時間') :
+                                 format === 4 ? (document.getElementById('f4-eval-type-1') ? document.getElementById('f4-eval-type-1').value : '時間') :
+                                 format === 2 ? '件数' : '時間';
+                if (hasValidNumber && grandSum !== 0) {
+                    grandTotalEvalEl.value = (evalType === '時間') ? grandSum.toFixed(2) : formatNumber(grandSum);
+                } else {
+                    grandTotalEvalEl.value = '';
+                }
+            }
+
+            const p0Total = document.getElementById('p0-total');
+            if (p0Total) p0Total.value = 0;
+            if (format === 1) {
+                const p1Count = document.getElementById('p1-count');
+                const evalType = document.getElementById('f1-eval-type-1') ? document.getElementById('f1-eval-type-1').value : '日数';
+                if (p1Count && evalType === '配分金') {
+                    if (p0Total) p0Total.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
+                    p1Count.value = 0;
+                } else {
+                    if (p1Count) p1Count.value = hasValidNumber && grandSum !== 0 ? formatNumber(grandSum) : '';
+                }
+
+            } else if (format === 2) {
+                let colSum1 = 0;
+                let hasCol1 = false;
+                document.querySelectorAll('#report-tables-wrapper .entry-f2-c1').forEach(input => {
+                    const v = parseNum(input.value);
+                    if (input.value.trim() !== '') {
+                        colSum1 += v;
+                        hasCol1 = true;
+                    }
+                });
+                const p1Count = document.getElementById('p1-count');
+                if (p1Count) p1Count.value = hasCol1 ? formatNumber(colSum1) : '';
+
+                let colSum2 = 0;
+                let hasCol2 = false;
+                document.querySelectorAll('#report-tables-wrapper .entry-f2-c2').forEach(input => {
+                    const v = parseNum(input.value);
+                    if (input.value.trim() !== '') {
+                        colSum2 += v;
+                        hasCol2 = true;
+                    }
+                });
+                const p2Count = document.getElementById('p2-count');
+                if (p2Count) p2Count.value = hasCol2 ? formatNumber(colSum2) : '';
+            } else if (format === 3 || format === 4) {
+                const p1Count = document.getElementById('p1-count');
+                const evalType = document.getElementById('f3-eval-type-1') ? document.getElementById('f3-eval-type-1').value : '時間';
+                if (p1Count) {
+                    p1Count.value = hasValidNumber && evalType === '時間' ? grandSum.toFixed(2) : formatNumber(grandSum);
+                }
+            }
+
+            calculateFinancials();
+        }
+
+        function calculateFinancials() {
+            for (let i = 1; i <= 3; i++) {
+                const priceEl = document.getElementById(`p${i}-price`);
+                const countEl = document.getElementById(`p${i}-count`);
+                const totalEl = document.getElementById(`p${i}-total`);
+                if (priceEl && countEl && totalEl) {
+                    const price = parseNum(priceEl.value);
+                    const count = parseNum(countEl.value);
+                    const total = price * count;
+                    totalEl.value = total === 0 ? '' : formatNumber(total);
+                }
+            }
+
+            const t0 = parseNum(document.getElementById('p0-total')?.value);
+            const t1 = parseNum(document.getElementById('p1-total')?.value);
+            const t2 = parseNum(document.getElementById('p2-total')?.value);
+            const t3 = parseNum(document.getElementById('p3-total')?.value);
+            const deduction = parseNum(document.getElementById('item-deduction')?.value);
+            const advance = parseNum(document.getElementById('item-advance')?.value);
+
+            const subtotal = t0 + t1 + t2 + t3 + deduction + advance;
+            const subtotalEl = document.getElementById('subtotal-amount');
+            if (subtotalEl) subtotalEl.value = subtotal === 0 ? '' : formatNumber(subtotal);
+
+            const material = parseNum(document.getElementById('item-material')?.value);
+            const admin = parseNum(document.getElementById('item-admin')?.value);
+
+            const grandTotal = subtotal + material + admin;
+            const grandTotalEl = document.getElementById('grand-total-amount');
+            if (grandTotalEl) grandTotalEl.value = grandTotal === 0 ? '' : formatNumber(grandTotal);
+        }
+
+        function updateCalendar() {
+            const year = parseInt(document.getElementById('report-year').value);
+            const month = parseInt(document.getElementById('report-month').value);
+            const format = parseInt(document.getElementById('report-format').value);
+            
+            const headerLeft = document.getElementById('table-header-left');
+            const headerRight = document.getElementById('table-header-right');
+            const headerInput = document.getElementById('table-header-input');
+            const tbodyLeft = document.getElementById('calendar-body-left');
+            const tbodyRight = document.getElementById('calendar-body-right');
+            const tbodyInput = document.getElementById('calendar-body-input');
+            
+            tbodyLeft.innerHTML = '';
+            tbodyRight.innerHTML = '';
+            tbodyInput.innerHTML = '';
+
+            const rowAllocation2 = document.getElementById('row-allocation-2');
+            if (rowAllocation2) {
+                rowAllocation2.style.display = (format === 2) ? 'flex' : 'none';
+            }
+
+            const itemName1Input = document.getElementById('item-name-1');
+            const itemName2Input = document.getElementById('item-name-2');
+            if (itemName1Input && !document.getElementById('is-locked-checkbox').checked) {
+                if (format === 2) {
+                    itemName1Input.value = '集合ポスト';
+                    if (itemName2Input) itemName2Input.value = '戸建て';
+                } else if (format === 3 || format === 4) {
+                    if (!itemName1Input.value || (itemName1Input.value !== '件数' && itemName1Input.value !== '日数')) {
+                        itemName1Input.value = '時間';
+                    }
+                }
+                else if (format === 1) {
+                    if (!itemName1Input.value || (itemName1Input.value !== '件数' && itemName1Input.value !== '配分金')) {
+                        itemName1Input.value = '日数';
+                    }
+                }
+            }
+
+            const getHeaderHTML = (side) => {
+                const num = side === 'left' ? '1' : '2';
+                if (format === 1) {
+                    const currentEvalType = itemName1Input ? itemName1Input.value : '日数';
+                    return `
+                        <th class="col-day">日</th>
+                        <th class="col-wday">曜日</th>
+                        <th><input type="text" id="f1-h1-${num}" class="text-center font-bold" value="摘要" oninput="handleTableHeaderInput(1, ${num}, this);"></th>
+                        <th class="col-eval">
+                            <select id="f1-eval-type-${num}" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat1EvalTypeChange(this);">
+                                <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
+                                <option value="件数" ${currentEvalType === '件数' ? 'selected' : ''}>件数</option>
+                                <option value="配分金" ${currentEvalType === '配分金' ? 'selected' : ''}>配分金</option>
+                            </select>
+                        </th>
+                    `;
+                } else if (format === 2) {
+                    const currentName1 = itemName1Input ? itemName1Input.value : '件数1';
+                    const currentName2 = itemName2Input ? itemName2Input.value : '件数2';
+                    return `
+                        <th class="col-day">日</th>
+                        <th class="col-wday">曜日</th>
+                        <th style="width: 35%;"><input type="text" id="f2-h${num}-col1" class="text-center font-bold" value="${currentName1}" oninput="handleFormat2HeaderInput(1, this);"></th>
+                        <th style="width: 35%;"><input type="text" id="f2-h${num}-col2" class="text-center font-bold" value="${currentName2}" oninput="handleFormat2HeaderInput(2, this);"></th>
+                        <th class="col-eval"><input type="text" class="text-center font-bold" value="件数" readonly style="background:transparent;" tabindex="-1"></th>
+                    `;
+                } else if (format === 3) {
+                    const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
+                    return `
+                        <th class="col-day">日</th>
+                        <th class="col-wday">曜日</th>
+                        <th style="width: 24%;"><input type="text" class="text-center font-bold" value="開始時刻" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th style="width: 24%;"><input type="text" class="text-center font-bold" value="終了時刻" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th style="width: 24%;"><input type="text" class="text-center font-bold" value="休息時間" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th class="col-eval">
+                            <select id="f3-eval-type-${num}" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat3EvalTypeChange(this);">
+                                <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
+                                <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
+                            </select>
+                        </th>
+                    `;
+                } else if (format === 4) {
+                    const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
+                    return `
+                        <th class="col-day">日</th>
+                        <th class="col-wday">曜日</th>
+                        <th style="width: 18%;"><input type="text" class="text-center font-bold" value="開始1" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th style="width: 18%;"><input type="text" class="text-center font-bold" value="終了1" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th style="width: 18%;"><input type="text" class="text-center font-bold" value="開始2" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th style="width: 18%;"><input type="text" class="text-center font-bold" value="終了2" readonly style="background:transparent;" tabindex="-1"></th>
+                        <th class="col-eval">
+                            <select id="f4-eval-type-${num}" class="print-select text-center font-bold text-xs bg-transparent cursor-pointer w-full" onchange="handleFormat4EvalTypeChange(this);">
+                                <option value="時間" ${currentEvalType === '時間' ? 'selected' : ''}>時間</option>
+                                <option value="日数" ${currentEvalType === '日数' ? 'selected' : ''}>日数</option>
+                            </select>
+                        </th>
+                    `;
+                }
+            };
+
+            headerLeft.innerHTML = getHeaderHTML('left');
+            if (!isMobileLayout) {
+                headerRight.innerHTML = getHeaderHTML('right');
+            } else {
+                headerInput.innerHTML = getHeaderHTML('input');
+            }
+
+            if (format === 3) {
+                const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
+                const s1 = document.getElementById('f3-eval-type-1');
+                const s2 = document.getElementById('f3-eval-type-2');
+                ensureOptionExists(s1, currentEvalType);
+                ensureOptionExists(s2, currentEvalType);
+                if (s1) s1.value = currentEvalType;
+                if (s2) s2.value = currentEvalType;
+            } else if (format === 4) {
+                const currentEvalType = itemName1Input ? itemName1Input.value : '時間';
+                const s1 = document.getElementById('f4-eval-type-1');
+                const s2 = document.getElementById('f4-eval-type-2');
+                ensureOptionExists(s1, currentEvalType);
+                ensureOptionExists(s2, currentEvalType);
+                if (s1) s1.value = currentEvalType;
+                if (s2) s2.value = currentEvalType;
+            }
+
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            const createRowHTML = (day) => {
+                const isValid = (0 < day && day <= daysInMonth);
+                const w = isValid ? weekdays[new Date(year, month - 1, day).getDay()] : '';
+
+                if (day === 0) {
+                    if (format === 1) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 col-day"><input type="text" id="f-day" class="text-center" onblur="getInputData(this);" onfocus="setActiveInput(this);"></td>
+                            <td class="text-center col-wday"><input type="text" id="f1-wday-${day}" class="text-center" readonly></td>
+                            <td><input type="text" id="f1-text-${day}" onblur="putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td class="col-eval"><input type="text" id="f1-eval-${day}" class="text-center eval-input" onblur="extractNumberAndReplace(this); putInputData();" onfocus="setActiveInput(this);" onblur="formatInput(this);"></td>
+                        `;
+                    } else if (format === 2) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 text-[11px] col-day"><input type="text" id="f-day" class="text-center" onblur="getInputData(this);" onfocus="setActiveInput(this);"></td>
+                            <td class="text-center text-[11px] col-wday"><input type="text" id="f2-wday-${day}" class="text-center" readonly></td>
+                            <td><input type="text" id="f2-num1-${day}" class="text-center entry-f2-c1" onblur="extractNumberAndReplace(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td><input type="text" id="f2-num2-${day}" class="text-center entry-f2-c2" onblur="extractNumberAndReplace(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td class="col-eval"><input type="text" id="f2-eval-${day}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly></td>
+                        `;
+                    } else if (format === 3) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 text-[11px] col-day"><input type="text" id="f-day" class="text-center" onblur="getInputData(this);"></td>
+                            <td class="text-center text-[11px] col-wday"><input type="text" id="f3-wday-${day}" class="text-center" readonly></td>
+                            <td><input type="text" id="f3-start-${day}" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td><input type="text" id="f3-end-${day}" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td><input type="text" id="f3-break-${day}" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td class="col-eval"><input type="text" id="f3-eval-${day}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly></td>
+                        `;
+                    } else if (format === 4) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 text-[10px] col-day"><input type="text" id="f-day" class="text-center" onblur="getInputData(this);" onfocus="setActiveInput(this);"></td>
+                            <td class="text-center text-[10px] col-wday"><input type="text" id="f4-wday-${day}" class="text-center" readonly></td>
+                            <td><input type="text" id="f4-start1-${day}" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td><input type="text" id="f4-end1-${day}" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td><input type="text" id="f4-start2-${day}" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td><input type="text" id="f4-end2-${day}" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this); putInputData();" onfocus="setActiveInput(this);"></td>
+                            <td class="col-eval"><input type="text" id="f4-eval-${day}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly></td>
+                        `;
+                    }
+                } else {
+                    if (format === 1) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 col-day">${isValid ? day : ''}</td>
+                            <td class="text-center col-wday"><input type="text" class="text-center" value="${w}" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f1-text-${day}" oninput="calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td class="col-eval"><input type="text" id="f1-eval-${day}" class="text-center eval-input" oninput="calculateTotals();" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''} onblur="formatInput(this);"></td>
+                        `;
+                    } else if (format === 2) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid ? day : ''}</td>
+                            <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w}" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f2-num1-${day}" class="text-center entry-f2-c1" onblur="extractNumberAndReplace(this); calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f2-num2-${day}" class="text-center entry-f2-c2" onblur="extractNumberAndReplace(this); calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td class="col-eval"><input type="text" id="f2-eval-${day}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid ? 'style="background:transparent;"' : ''}></td>
+                        `;
+                    } else if (format === 3) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 text-[11px] col-day">${isValid ? day : ''}</td>
+                            <td class="text-center text-[11px] col-wday"><input type="text" class="text-center" value="${w}" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f3-start-${day}" class="text-center entry-f3-c1" onblur="extractTimeAndReplace(this); handleTimeBlur(this);" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f3-end-${day}" class="text-center entry-f3-c2" onblur="extractTimeAndReplace(this); handleTimeBlur(this);" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f3-break-${day}" class="text-center entry-f3-c3" onblur="extractMinutesAndReplace(this); calculateTotals(); triggerAutoSave();" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td class="col-eval"><input type="text" id="f3-eval-${day}" class="text-center font-medium bg-slate-50 text-[11px] eval-input" readonly ${!isValid ? 'style="background:transparent;"' : ''}></td>
+                        `;
+                    } else if (format === 4) {
+                        return `
+                            <td class="text-center font-bold bg-slate-50 text-[10px] col-day">${isValid ? day : ''}</td>
+                            <td class="text-center text-[10px] col-wday"><input type="text" class="text-center" value="${w}" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f4-start1-${day}" class="text-center entry-f4-c1 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this);" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f4-end1-${day}" class="text-center entry-f4-c2 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this);" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f4-start2-${day}" class="text-center entry-f4-c3 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this);" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td><input type="text" id="f4-end2-${day}" class="text-center entry-f4-c4 text-xs" onblur="extractTimeAndReplace(this); handleTimeBlur(this);" onfocus="setActiveInput(this);" ${!isValid ? 'readonly style="background:transparent;"' : ''}></td>
+                            <td class="col-eval"><input type="text" id="f4-eval-${day}" class="text-center font-medium bg-slate-50 text-[10px] eval-input" readonly ${!isValid ? 'style="background:transparent;"' : ''}></td>
+                        `;
+                    }
+                }
+            };
+
+            if (isMobileLayout) {
+                // スマホ表示時: データが存在する日のみを表示
+                for (let d = 1; d <= 31; d++) {
+                    const tr = document.createElement('tr');
+                    tr.id = `row-id-${d}`;
+                    if (hasDataInDayRow(d, format, currentFormDataCache)) {
+                        tr.hidden = false;
+                    } else {
+                        tr.hidden = true;
+                    }
+                    tr.innerHTML = createRowHTML(d);
+                    tbodyLeft.appendChild(tr);
+                }
+
+                // スマホ表示時: 合計行を左テーブルの最下部に追加
+                const trTotal = document.createElement('tr');
+                if (format === 1) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100">合計</td>
+                        <td><input type="text" readonly style="background:transparent;"></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                    `;
+                } else if (format === 2) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
+                        <td><input type="text" id="f2-col-total-1" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                        <td><input type="text" id="f2-col-total-2" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                    `;
+                } else if (format === 3) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
+                        <td><input type="text" id="f3-col-total-1" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                        <td><input type="text" id="f3-col-total-2" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                        <td><input type="text" id="f3-col-total-3" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                    `;
+                } else if (format === 4) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100 text-[10px]">合計</td>
+                        <td><input type="text" id="f4-col-total-1" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td><input type="text" id="f4-col-total-2" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td><input type="text" id="f4-col-total-3" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td><input type="text" id="f4-col-total-4" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                    `;
+                }
+                tbodyLeft.appendChild(trTotal);
+                const tr = document.createElement('tr');
+                tr.innerHTML = createRowHTML(0);
+                tbodyInput.appendChild(tr);
+            } else {
+                // 標準表示時: 1〜16日(左テーブル), 17〜31日(右テーブル)に左右分割
+                for (let d = 1; d <= 16; d++) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = createRowHTML(d);
+                    tbodyLeft.appendChild(tr);
+                }
+
+                for (let d = 17; d <= 31; d++) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = createRowHTML(d);
+                    tbodyRight.appendChild(tr);
+                }
+
+                const trTotal = document.createElement('tr');
+                if (format === 1) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100">合計</td>
+                        <td><input type="text" readonly style="background:transparent;"></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                    `;
+                } else if (format === 2) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
+                        <td><input type="text" id="f2-col-total-1" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                        <td><input type="text" id="f2-col-total-2" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50" readonly placeholder=""></td>
+                    `;
+                } else if (format === 3) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100 text-[11px]">合計</td>
+                        <td><input type="text" id="f3-col-total-1" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                        <td><input type="text" id="f3-col-total-2" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                        <td><input type="text" id="f3-col-total-3" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-xs" readonly placeholder=""></td>
+                    `;
+                } else if (format === 4) {
+                    trTotal.innerHTML = `
+                        <td colspan="2" class="text-center font-bold bg-slate-100 text-[10px]">合計</td>
+                        <td><input type="text" id="f4-col-total-1" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td><input type="text" id="f4-col-total-2" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td><input type="text" id="f4-col-total-3" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td><input type="text" id="f4-col-total-4" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                        <td class="col-eval"><input type="text" id="grand-total-eval" class="text-center font-bold bg-slate-50 text-[11px]" readonly placeholder=""></td>
+                    `;
+                }
+                tbodyRight.appendChild(trTotal);
+            }
+
+            calculateTotals();
+            applyLockStateToElements();
+        }
+
+        let activeInput = null;
+        function setActiveInput(el) {
+            activeInput = el;
+        }
+
+        function extractNumberAndReplace(inputElement) {
+            let rawText = inputElement.value;
+            if (!rawText || /(\d{1,4}件)/.test(rawText)) return;
+            let results = extractNumberFromTranscript(rawText);
+            if (!results) inputElement.value = '';
+            else inputElement.value = results + '件';
+        }
+
+        function extractTimeAndReplace(inputElement) {
+            let rawText = inputElement.value;
+            if (/(\d{1,2}:\d{1,2})/.test(rawText)) return;
+            let results = extractTimesFromTranscript(rawText);
+
+            if (results.length > 0) {
+                let newText = results[0]; 
+                if (rawText !== newText) {
+                    inputElement.value = newText;
+                }
+            }
+        }
+
+        function extractMinutesAndReplace(inputElement) {
+            let rawText = inputElement.value;
+            if (!rawText || /(\d{1,2}分)/.test(rawText)) return;
+            let results = extractNumberFromTranscript(rawText);
+            if (!results) inputElement.value = '';
+            else inputElement.value = results + '分';
+        }
+
+        function updateTopItemRow() {
+            const format = parseInt(document.getElementById('report-format').value);
+            const currentEvalType = document.getElementById('f1-eval-type-1');
+            const row0 = document.getElementById('top-item-row-0');
+            const row1 = document.getElementById('top-item-row-1');
+
+            if (!row0 || !row1) return;
+
+            if (format === 1 && currentEvalType && currentEvalType.value === '配分金') {
+                row1.classList.add('hidden');
+                row0.classList.remove('hidden');
+            } else {
+                row1.classList.remove('hidden');
+                row0.classList.add('hidden');
+            }
+        }
+
+        function toggleLockState() {
+            applyLockStateToElements();
+            triggerAutoSave();
+        }
+
+        function applyLockStateToElements() {
+            const isLocked = document.getElementById('is-locked-checkbox').checked;
+            const lockedTargets = document.querySelectorAll('.locked-target, #table-header-left input, #table-header-left select, #table-header-right input, #table-header-right select');
+            lockedTargets.forEach(el => {
+                if (isLocked) {
+                    if (el.tagName === 'SELECT') {
+                        el.disabled = true;
+                    } else {
+                        el.setAttribute('readonly', 'true');
+                    }
+                    el.classList.add('bg-slate-100', 'cursor-not-allowed');
+                } else {
+                    if (el.tagName === 'SELECT') {
+                        el.disabled = false;
+                    } else {
+                        el.removeAttribute('readonly');
+                    }
+                    el.classList.remove('bg-slate-100', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function collectFormData() {
+            const format = parseInt(document.getElementById('report-format').value);
+            
+            const data = {
+                format: document.getElementById('report-format').value,
+                year: document.getElementById('report-year').value,
+                month: document.getElementById('report-month').value,
+                isLocked: document.getElementById('is-locked-checkbox').checked,
+                workContentMemo: document.getElementById('work-content-memo').value,
+                contractTitle: document.getElementById('contract-title').value,
+                contractNo: document.getElementById('contract-no').value,
+                clientName: document.getElementById('client-name').value,
+                memberNo: document.getElementById('member-no').value,
+                memberName: document.getElementById('member-name').value,
+                secretariatMemo: document.getElementById('secretariat-memo').value,
+                itemNames: {},
+                financials: {},
+                inputs: {}, // 空のオブジェクトで初期化
+                groupMembers: []
+            };
+
+            const row0 = document.getElementById('top-item-row-0');
+            const row1 = document.getElementById('top-item-row-1');
+            // 項目名の取得
+            if (!row0.classList.contains('hidden')) {
+                const el = document.getElementById('item-name-0');
+                if (el && el.value.trim() !== '') {
+                    data.itemNames['item-name-0'] = el.value;
+                }
+            }
+            if (!row1.classList.contains('hidden')) {
+                const el = document.getElementById('item-name-1');
+                if (el && el.value.trim() !== '') {
+                    data.itemNames['item-name-1'] = el.value;
+                }
+            }
+            if (format === 2) {
+                const el = document.getElementById('item-name-2');
+                if (el && el.value.trim() !== '') {
+                    data.itemNames['item-name-2'] = el.value;
+                }
+            }
+            for (let i = 3; i <= 7; i++) {
+                const el = document.getElementById(`item-name-${i}`);
+                if (el && el.value.trim() !== '') {
+                    data.itemNames[`item-name-${i}`] = el.value;
+                }
+            }
+
+            // 金額関係の取得（値があるもののみ）
+            if (!row0.classList.contains('hidden')) {
+                const el = document.getElementById('p0-price');
+                if (el && el.value.trim() !== '') data.financials['p0-price'] = el.value;
+            }
+            if (!row1.classList.contains('hidden')) {
+                const el = document.getElementById('p1-price');
+                if (el && el.value.trim() !== '') data.financials['p1-price'] = el.value;
+            }
+            if (format === 2) {
+                const el = document.getElementById('p2-price');
+                if (el && el.value.trim() !== '') data.financials['p2-price'] = el.value;
+            }
+            const el = document.getElementById('p3-price');
+            if (el && el.value.trim() !== '') data.financials['p3-price'] = el.value;
+
+            ['p3-count', 'item-deduction', 'item-advance', 'item-material', 'item-admin'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.value.trim() !== '') data.financials[id] = el.value;
+            });
+
+            // ヘッダーの評価タイプ（日数/時間/件数など）は保存
+            const evalTypeKey = `f${format}-eval-type-1`;
+            const evalTypeEl = document.getElementById(evalTypeKey);
+            if (evalTypeEl) {
+                data.inputs[evalTypeKey] = evalTypeEl.value;
+            }
+            const evalTypeKey2 = `f${format}-eval-type-2`;
+            const evalTypeEl2 = document.getElementById(evalTypeKey2);
+            if (evalTypeEl2) {
+                data.inputs[evalTypeKey2] = evalTypeEl2.value;
+            }
+
+            // ★ 1日〜31日のうち、実際にデータが存在する日（=表示対象の日）のみを取得して保存する
+            for (let d = 1; d <= 31; d++) {
+                if (hasDataInDayRow(d, format)) {
+                    if (format === 1) {
+                        const t = document.getElementById(`f1-text-${d}`)?.value;
+                        const e = document.getElementById(`f1-eval-${d}`)?.value;
+                        if (t) data.inputs[`f1-text-${d}`] = t;
+                        if (e) data.inputs[`f1-eval-${d}`] = e;
+                    } else if (format === 2) {
+                        const n1 = document.getElementById(`f2-num1-${d}`)?.value;
+                        const n2 = document.getElementById(`f2-num2-${d}`)?.value;
+                        const e = document.getElementById(`f2-eval-${d}`)?.value;
+                        if (n1) data.inputs[`f2-num1-${d}`] = n1;
+                        if (n2) data.inputs[`f2-num2-${d}`] = n2;
+                        if (e) data.inputs[`f2-eval-${d}`] = e;
+                    } else if (format === 3) {
+                        const s = document.getElementById(`f3-start-${d}`)?.value;
+                        const e = document.getElementById(`f3-end-${d}`)?.value;
+                        const b = document.getElementById(`f3-break-${d}`)?.value;
+                        const ev = document.getElementById(`f3-eval-${d}`)?.value;
+                        if (s) data.inputs[`f3-start-${d}`] = s;
+                        if (e) data.inputs[`f3-end-${d}`] = e;
+                        if (b) data.inputs[`f3-break-${d}`] = b;
+                        if (ev) data.inputs[`f3-eval-${d}`] = ev;
+                    } else if (format === 4) {
+                        const s1 = document.getElementById(`f4-start1-${d}`)?.value;
+                        const e1 = document.getElementById(`f4-end1-${d}`)?.value;
+                        const s2 = document.getElementById(`f4-start2-${d}`)?.value;
+                        const e2 = document.getElementById(`f4-end2-${d}`)?.value;
+                        const ev = document.getElementById(`f4-eval-${d}`)?.value;
+                        if (s1) data.inputs[`f4-start1-${d}`] = s1;
+                        if (e1) data.inputs[`f4-end1-${d}`] = e1;
+                        if (s2) data.inputs[`f4-start2-${d}`] = s2;
+                        if (e2) data.inputs[`f4-end2-${d}`] = e2;
+                        if (ev) data.inputs[`f4-eval-${d}`] = ev;
+                    }
+                }
+            }
+
+            // 合計欄の値を保持
+            const grandTotalEl = document.getElementById('grand-total-eval');
+            if (grandTotalEl && grandTotalEl.value) {
+                data.inputs['grand-total-eval'] = grandTotalEl.value;
+            }
+
+            return data;
+        }
+
+        function restoreFormData(data) {
+            if (!data) return;
+
+            if (data.format) document.getElementById('report-format').value = data.format;
+            if (data.year) document.getElementById('report-year').value = data.year;
+            if (data.month) document.getElementById('report-month').value = data.month;
+
+            updateCalendar();
+
+            if (data.isLocked !== undefined) {
+                document.getElementById('is-locked-checkbox').checked = data.isLocked;
+            }
+            if (data.workContentMemo !== undefined) document.getElementById('work-content-memo').value = data.workContentMemo;
+            if (data.contractTitle !== undefined) document.getElementById('contract-title').value = data.contractTitle;
+            if (data.contractNo !== undefined) document.getElementById('contract-no').value = data.contractNo;
+            if (data.clientName !== undefined) document.getElementById('client-name').value = data.clientName;
+            if (data.memberNo !== undefined) document.getElementById('member-no').value = data.memberNo;
+            if (data.memberName !== undefined) document.getElementById('member-name').value = data.memberName;
+            if (data.secretariatMemo !== undefined) document.getElementById('secretariat-memo').value = data.secretariatMemo;
+
+            if (data.itemNames) {
+                for (const [id, val] of Object.entries(data.itemNames)) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val;
+                }
+            }
+
+            if (data.financials) {
+                for (const [id, val] of Object.entries(data.financials)) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val;
+                }
+            }
+
+            if (data.inputs) {
+                for (const [id, val] of Object.entries(data.inputs)) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val;
+                }
+            }
+
+            applyLockStateToElements();
+            calculateTotals();
+        }
+
+        function saveToLocalStorage(notify = false) {
+            const data = collectFormData();
+            const contractNo = data.contractNo || 'default';
+            const month = data.month || '1';
+            const uniqueKey = `report_${contractNo}_${data.year}_${month}_${Date.now()}`;
+
+            localStorage.setItem(LS_CURRENT_KEY, JSON.stringify(data));
+
+            let historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
+            const baseKeyPrefix = `report_${contractNo}_${data.year}_${month}_`;
+            historyKeys = historyKeys.filter(k => !k.startsWith(baseKeyPrefix));
+            historyKeys.unshift(uniqueKey);
+            if (historyKeys.length > 20) historyKeys = historyKeys.slice(0, 20);
+
+            localStorage.setItem(LS_HISTORY_KEYS_LIST, JSON.stringify(historyKeys));
+            localStorage.setItem(uniqueKey, JSON.stringify(data));
+
+            if (notify) {
+                alert('ブラウザに一時保存しました。');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            const raw = localStorage.getItem(LS_CURRENT_KEY);
+            if (raw) {
+                try {
+                    const data = JSON.parse(raw);
+                    currentFormDataCache = data;
+                    restoreFormData(data);
+                } catch (e) {
+                    console.error('LocalStorage load error:', e);
+                }
+            }
+        }
+
+        function clearLocalStorageAndReload() {
+            if (confirm('入力データをクリアしてリロードしますか？')) {
+                localStorage.removeItem(LS_CURRENT_KEY);
+                location.reload();
+            }
+        }
+
+        let handle = null;
+
+        async function exportJSONFile() {
+            const data = collectFormData();
+            const contractNo = data.contractNo || '2601000';
+            const month = data.month || '9';
+            const filename = `就業報告書${contractNo}_${month}月.json`;
+
+            if ('showSaveFilePicker' in window) {
+                try {
+                    if (!handle) {
+                        handle = await window.showSaveFilePicker({
+                            suggestedName: filename,
+                            types: [{
+                                description: 'JSON Files',
+                                accept: {
+                                    'application/json': ['.json'],
+                                },
+                            }],
+                        });
+                    }
+                    const writable = await handle.createWritable();
+                    await writable.write(JSON.stringify(data, null, 2));
+                    await writable.close();
+                    alert('保存しました！');
+                } catch (err) {
+                    console.log('保存がキャンセルされたか、エラーが発生しました:', err);
+                }
+            } else {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        async function importJSONFiles(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            let loadedReportData = null;
+
+            for (let file of files) {
+                try {
+                    const text = await file.text();
+                    loadedReportData = JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                }
+            }
+
+            if (!loadedReportData) {
+                alert('有効な就業報告書のJSONデータが見つかりませんでした。');
+                event.target.value = '';
+                return;
+            }
+
+            currentFormDataCache = loadedReportData;
+            restoreFormData(loadedReportData);
+            alert(`JSONファイルのインポートに成功しました。`);
+            event.target.value = '';
+            triggerAutoSave();
+        }
+
+        async function saveAsPDF() {
+            const element = document.getElementById('report-print-area');
+            const contractNo = document.getElementById('contract-no').value || '2601000';
+            const memberNo = document.getElementById('member-no').value.trim();
+            const memberName = document.getElementById('member-name').value.trim();
+
+            if (!memberNo || !memberName) {
+                alert('PDF保存の前に「会員番号」と「会員氏名」を入力してください。');
+                return;
+            }
+            const month = document.getElementById('report-month').value || '9';
+
+            const inputs = element.querySelectorAll('input, textarea');
+            const placeholders = [];
+            inputs.forEach((input, index) => {
+                placeholders[index] = input.getAttribute('placeholder');
+                if (!input.value && placeholders[index]) {
+                    input.setAttribute('placeholder', '');
+                }
+            });
+
+            const pdfFilename = `就業報告書${contractNo}_${month}月(${memberNo}).pdf`;
+            const jsonFilename = `就業報告書${contractNo}_${month}月(${memberNo}).json`;
+
+            const opt = {
+                margin:       [4, 4, 4, 4],
+                filename:     pdfFilename,
+                image:        { type: 'jpeg', quality: 0.75 },
+                html2canvas:  { scale: 1.5, useCORS: true, logging: false, removeContainer: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true }
+            };
+
+            try {
+                const pdfArrayBuffer = await html2pdf().set(opt).from(element).output('arraybuffer');
+                const pdfDoc = await PDFLib.PDFDocument.load(pdfArrayBuffer);
+
+                const formData = collectFormData();
+                const jsonString = JSON.stringify(formData, null, 2);
+                const jsonBytes = new TextEncoder().encode(jsonString);
+
+                await pdfDoc.attach(jsonBytes, jsonFilename, {
+                    description: '就業報告書 入力データ (JSON)',
+                    mimeType: 'application/json',
+                    creationDate: new Date(),
+                    modificationDate: new Date()
+                });
+
+                const modifiedPdfBytes = await pdfDoc.save();
+
+                const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = pdfFilename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+            } catch (err) {
+                console.error('PDF save error:', err);
+                alert('PDFの生成およびJSONデータの添付中にエラーが発生しました。');
+            } finally {
+                inputs.forEach((input, index) => {
+                    if (placeholders[index]) {
+                        input.setAttribute('placeholder', placeholders[index]);
+                    }
+                });
+            }
+        }
+
+        function sendEmailReport() {
+            const memberNo = document.getElementById('member-no').value.trim();
+            const memberName = document.getElementById('member-name').value.trim();
+            if (!memberNo || !memberName) {
+                alert('メール送信の前に「会員番号」と「会員氏名」を入力してください。');
+                return;
+            }
+
+            const year = document.getElementById('report-year').value;
+            const month = document.getElementById('report-month').value;
+            const contractNo = document.getElementById('contract-no').value;
+            const grandTotal = document.getElementById('grand-total-amount').value || '0';
+
+            const to = 'houkoku@machida-sjc.or.jp';
+            const sender = `${memberNo} ${memberName}`;
+            const subject = `【就業報告書】 ${year}年${month}月分 (${sender})`;
+
+            const body = 
+`公益社団法人 町田市シルバー人材センター 御中
+
+添付にPDFファイルの通り、就業報告書を送信いたします。
+
+----------------------------------
+■ 会員情報: ${sender}
+■ 対象年月: ${year}年 ${month}月分
+■ 契約番号: ${contractNo}
+■ 請求合計: ${grandTotal} 円
+----------------------------------
+`;
+
+            const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoUrl;
+        }
+
+        function openHistoryModal() {
+            const container = document.getElementById('history-list-container');
+            container.innerHTML = '';
+
+            const historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
+            if (historyKeys.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">保存された履歴はありません。</p>';
+            } else {
+                historyKeys.forEach(key => {
+                    const rawData = localStorage.getItem(key);
+                    if (!rawData) return;
+                    try {
+                        const data = JSON.parse(rawData);
+                        const div = document.createElement('div');
+                        div.className = 'flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 text-xs';
+                        div.innerHTML = `
+                            <div>
+                                <span class="font-bold text-slate-800">${data.year}年${data.month}月分</span> 
+                                <span class="text-slate-600 ml-2">契約番号: ${data.contractNo || '未設定'}</span>
+                                <span class="text-slate-500 ml-2">(${data.memberName || '名前なし'})</span>
+                            </div>
+                            <div class="space-x-2">
+                                <button onclick="loadHistoryItem('${key}');" class="bg-blue-600 text-white px-2.5 py-1 rounded hover:bg-blue-700">呼出</button>
+                                <button onclick="deleteHistoryItem('${key}');" class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded hover:bg-rose-200">削除</button>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                });
+            }
+
+            document.getElementById('history-modal').classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        function loadHistoryItem(key) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const data = JSON.parse(raw);
+                currentFormDataCache = data;
+                restoreFormData(data);
+                localStorage.setItem(LS_CURRENT_KEY, raw);
+                alert('選択した報告書データを読み込みました。');
+                closeHistoryModal();
+            }
+        }
+
+        function deleteHistoryItem(key) {
+            if (confirm('この履歴データを削除しますか？')) {
+                localStorage.removeItem(key);
+                let historyKeys = JSON.parse(localStorage.getItem(LS_HISTORY_KEYS_LIST) || '[]');
+                historyKeys = historyKeys.filter(k => k !== key);
+                localStorage.setItem(LS_HISTORY_KEYS_LIST, JSON.stringify(historyKeys));
+                openHistoryModal();
+            }
+        }
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn("このブラウザはWeb Speech APIをサポートしていません。");
+                return false;
+            }
+
+            try {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'ja-JP';
+                recognition.interimResults = false;
+                recognition.continuous = false;
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    document.getElementById('voice-btn-text').textContent = "音声停止";
+                    document.getElementById('voice-btn').classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                    document.getElementById('voice-btn').classList.add('bg-rose-600', 'hover:bg-rose-700');
+                    document.getElementById('voice-status').classList.remove('hidden');
+                    document.getElementById('voice-transcript-display').textContent = "";
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    console.log("音声認識結果:", transcript);
+                    document.getElementById('voice-transcript-display').textContent = `「${transcript}」`;
+                    processVoiceCommand(transcript);
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("音声認識エラー:", event.error);
+                    stopVoiceInput();
+                };
+
+                recognition.onend = () => {
+                    stopVoiceInput();
+                };
+                return true;
+            } catch (e) {
+                console.error("SpeechRecognition 初期化エラー:", e);
+                return false;
+            }
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                const ok = initSpeechRecognition();
+                if (!ok) {
+                    alert('お使いのブラウザは音声入力に対応していないか、マイクの使用が拒否されています。');
+                    return;
+                }
+            }
+            if (isListening) {
+                try {
+                    recognition.stop();
+                } catch(e) {
+                    console.error(e);
+                    stopVoiceInput();
+                }
+            } else {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error("認識開始エラー:", e);
+                    initSpeechRecognition();
+                    try {
+                        recognition.start();
+                    } catch(err) {
+                        alert('音声認識の開始に失敗しました。ページのHTTPS接続やマイク許可設定を確認してください。');
+                        stopVoiceInput();
+                    }
+                }
+            }
+        }
+
+        function stopVoiceInput() {
+            isListening = false;
+            const btnText = document.getElementById('voice-btn-text');
+            const btn = document.getElementById('voice-btn');
+            const status = document.getElementById('voice-status');
+            if (btnText) btnText.textContent = "音声入力";
+            if (btn) {
+                btn.classList.remove('bg-rose-600', 'hover:bg-rose-700');
+                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            }
+            if (status) status.classList.add('hidden');
+        }
+
+        function parseDayWord(text) {
+            const map = {
+                'ついたち': '1日', '一日': '1日',
+                'ふつか': '2日', '二日': '2日',
+                'みっか': '3日', '三日': '3日',
+                'よっか': '4日', '四日': '4日',
+                'いつか': '5日', '五日': '5日',
+                'むいか': '6日', '六日': '6日',
+                'なのか': '7日', '七日': '7日',
+                'ようか': '8日', '八日': '8日',
+                'ここのか': '9日', '九日': '9日',
+                'とおか': '10日', '十日': '10日',
+                'じゅういちにち': '11日', 'じゅうににち': '12日', 'じゅうさんにち': '13日', 
+                'じゅうよっか': '14日', 'じゅうごにち': '15日', 'じゅうろくにち': '16日', '十六日': '16日',
+                'じゅうしちにち': '17日', 'じゅうはちにち': '18日', 'じゅうくにち': '19日', 
+                'はつか':  '20日', '二十日': '20日', 'にじゅういちにち': '21日', 'にじゅうににち': '22日', 
+                'にじゅうさんにち': '23日', 'にじゅうよっか': '24日', 'にじゅうごにち': '25日',
+                'にじゅうろくにち': '26日', 'にじゅうしちにち': '27日', 'にじゅうはちにち': '28日', 
+                'にじゅうくにち': '29日', 'さんじゅうにち': '30日', 'さんじゅういちにち': '31日'
+            };
+            for (let key in map) {
+                if (text.includes(key)) text = text.replace(key, map[key]);
+            }
+            const today = new Date();
+            text = text.replace('きょう', String(today.getDate()) + '日').replace('今日', String(today.getDate()) + '日')
+            .replace('きのう', String(today.getDate()-1) + '日').replace('昨日', String(today.getDate()-1) + '日')
+            .replace('おととい', String(today.getDate()-2) + '日').replace('一昨日', String(today.getDate()-2) + '日')
+            .replace('あす', String(today.getDate()+1) + '日').replace('明日', String(today.getDate()+1) + '日')
+            .replace('あさって', String(today.getDate()+2) + '日').replace('明後日', String(today.getDate()+2) + '日');
+
+            let regex = /\s*(\d{1,2})\s*日/g;
+            let match;
+            let results = [];
+
+            while ((match = regex.exec(text)) !== null) {
+                let n1 = parseInt(match[1], 10);
+                if (n1 >= 1 && n1 <= 31) {
+                    results.push({
+                        index: match.index,
+                        num: n1
+                    });
+                }
+            }
+            results.sort((a, b) => a.index - b.index);
+            return results;
+        }
+
+        function parseTownName(text) {
+            const townMap = {
+                '，': '', '、': '', '。': '',
+                '一': '1', '二': '2', '三': '3', '四': '4', '五': '5',
+                '六': '6', '七': '7', '八': '8', '九': '9', '第': '台',
+                'まちだし': '町田市', 'はらまちだ': '原町田', '原町だ': '原町田',
+                'なかまち': '中町', 'あさひまち': '旭町', '朝日町': '旭町',
+                'もりの': '森野', '森の': '森野', 'ほんまちだ': '本町田', '本町だ': '本町田',
+                'みなみおおや': '南大谷', 'ふじのだい': '藤の台', '藤野台': '藤の台', '藤ノ台': '藤の台',
+                'たまがわがくえん': '玉川学園', '多摩川学園': '玉川学園', 'ひがしたまがわがくえん': '東玉川学園',
+                'かなもり': '金森', 'かなもりひがし': '金森東',
+                'こがさか': '高ヶ坂', 'こうがさか': '高ヶ坂', '古賀坂': '高ヶ坂', '古賀 坂': '高ヶ坂', '古ヶ坂': '高ヶ坂',
+                'みなみまちだ': '南町田', '南町だ': '南町田', 'つるま': '鶴間',
+                'つくしの': 'つくし野', 'みなみつくしの': '南つくし野',
+                'なるせ': '成瀬', '鳴瀬': '成瀬', 'にしなるせ': '西成瀬',
+                'なるせだい': '成瀬台', 'なる世代': '成瀬台', '成世代': '成瀬台',
+                'みなみなるせ': '南成瀬', 'なるせがおか': '成瀬が丘', '成瀬ヶ丘': '成瀬が丘',
+                'おがわ': '小川', 'のづたまち': '野津田町', 'のずたまち': '野津田町', 'のつだまち': '野津田町',
+                'かない': '金井', '課内': '金井', '家内': '金井',
+                'かないがおか': '金井ヶ丘', '金井が丘': '金井ヶ丘', 'かないまち': '金井町',
+                'やくしだい': '薬師台', '訳しだい': '薬師台', 'つるかわ': '鶴川',
+                'おおくらまち': '大蔵町', '大倉町': '大蔵町', 'おのじまち': '小野路町', '小野寺町': '小野路町',
+                'しんこうじ': '真光寺', '心光寺': '真光寺', 'しんこうじまち': '真光寺町', '真麹町': '真光寺町', '新麹町': '真光寺町',
+                'ひろばかま': '広袴', '広場窯': '広袴', 'ひろばかままち': '広袴町',
+                'のうがや': '能ヶ谷', '脳がや': '能ヶ谷', 'みわまち': '三輪町', '三和町': '三輪町',
+                'みわみどりやま': '三輪緑山', '美輪緑山': '三輪緑山', 'やまざきまち': '山崎町',
+                'やまざき': '山崎', 'ずしまち': '図師町', '逗子町': '図師町',
+                'ただお': '忠生', 'ねぎしまち': '根岸町', 'ねぎし': '根岸',
+                'きそひがし': '木曽東', 'きそまち': '木曽町', 'きそにし': '木曽西',
+                'ときわまち': '常盤町', 'ときわ町': '常盤町', 'やべまち': '矢部町',
+                'かみおやまだまち': '上小山田町', 'しもおやまだまち': '下小山田町',
+                'おやまださくらだい': '小山田桜台', 'おやままち': '小山町',
+                'おやまがおか': '小山ヶ丘', '小山が丘': '小山ヶ丘', 'あいはらまち': '相原町'
+            };
+            const regexs = [
+                /原町田\d{1,6}丁目/, /原町田(?!\d)/, /中町\d{1,4}丁目/, /中町(?!\d)/,
+                /旭町\d{1,3}丁目/, /旭町(?!\d)/, /森野\d{1,6}丁目/, /森野(?!\d)/,
+                /本町田/, /南大谷\d{1,7}丁目/, /南大谷(?!\d)/, /藤の台\d{1,3}丁目/, /藤の台(?!\d)/,
+                /東玉川学園\d{1,4}丁目/, /東玉川学園(?!\d)/, /(?<![東西南北])玉川学園\d{1,8}丁目/, /(?<![東西南北])玉川学園(?!\d)/,
+                /金森東\d{1,4}丁目/, /金森東(?!\d)/, /金森\d{1,7}丁目/, /金森(?<!東|\d)/,
+                /高ヶ坂\d{1,7}丁目/, /高ヶ坂(?!\d)/, /南町田\d{1,5}丁目/, /南町田(?!\d)/,
+                /鶴間\d{1,8}丁目/, /鶴間(?!\d)/, /南つくし野\d{1,4}丁目/, /南つくし野(?!\d)/,
+                /(?<![東西南北])つくし野\d{1,4}丁目/, /(?<![東西南北])つくし野(?!\d)/, /西成瀬\d{1,3}丁目/, /西成瀬(?!\d)/,
+                /成瀬台\d{1,4}丁目/, /成瀬台(?!\d)/, /南成瀬\d{1,8}丁目/, /南成瀬(?!\d)/,
+                /成瀬が丘\d{1,3}丁目/, /成瀬が丘(?!\d)/, /(?<![東西南北])成瀬\d{1,8}丁目/, /(?<![東西南北])成瀬(?!台|が丘|\d)/,
+                /小川\d{1,7}丁目/, /小川(?!\d)/, /野津田町/, /金井ヶ丘\d{1,4}丁目/, /金井ヶ丘(?!\d)/,
+                /金井町/, /金井\d{1,8}丁目/, /金井(?!ヶ丘|が丘|\d)/, /薬師台\d{1,3}丁目/, /薬師台(?!\d)/,
+                /鶴川\d{1,6}丁目/, /鶴川(?!\d)/, /大蔵町/, /小野路町/, /真光寺町/, /真光寺\d{1,3}丁目/,
+                /真光寺(?!町|\d)/, /広袴町/, /広袴\d{1,4}丁目/, /広袴(?!\d)/, /能ヶ谷\d{1,7}丁目/, /能ヶ谷(?!\d)/,
+                /三輪町/, /三輪緑山\d{1,4}丁目/, /三輪緑山(?!\d)/, /山崎町/, /山崎1丁目/, /山崎(?!町|\d)/,
+                /図師町/, /忠生\d{1,4}丁目/, /忠生(?!\d)/, /根岸町/, /根岸\d{1,2}丁目/, /根岸(?!町|\d)/,
+                /木曽東\d{1,4}丁目/, /木曽東(?!\d)/, /木曽町/, /木曽西\d{1,5}丁目/, /木曽西(?!\d)/,
+                /常盤町/, /矢部町/, /上小山田町/, /下小山田町/, /小山田桜台\d{1,2}丁目/, /小山田桜台(?!\d)/,
+                /小山町/, /小山ヶ丘\d{1,6}丁目/, /小山ヶ丘(?!\d)/, /相原町/
+            ];
+            for (let key in townMap) {
+                if (text.includes(key)) text = text.replaceAll(key, townMap[key]);
+            }
+            let results = [];
+            for (let regex of regexs) {
+                let match = regex.exec(text);
+                if (match) {
+                    results.push({
+                        index: match.index,
+                        data: match[0]
+                    });
+                }
+            }
+            results.sort((a, b) => a.index - b.index);
+            let towns = '';
+            for (let key in results) {
+                if (towns === '') {
+                    towns = results[key].data;
+                } else {
+                    towns = towns + ',' + results[key].data;
+                }
+            }
+            return towns;
+        }
+
+        function extractNumberFromTranscript(text) {
+            let regex = /(?<!\d)(\d{1,4})(?!\d|日)/;
+            let match = regex.exec(text);
+            const debugEl = document.getElementById('debug-data-display');
+            if (debugEl && match) debugEl.textContent += ',' + match[0];
+            if (!match) return '';
+            return match[0];
+        }
+
+        function extractNumberWithUnitFromTranscript(text, unit) {
+            let regex;
+            if (unit === 1) {
+                regex = /(?<!\d)(\d{1,4})件/;
+            } else {
+                regex = /(?<!\d)(\d{1,5})円/;
+            }
+            let match = regex.exec(text);
+            if (!match) return '';
+            return match[1];
+        }
+
+        function extractNumbersFromTranscript(text) {
+            let t = text;
+            t = t.replace(/千/g, '1').replace(/百/g, '1').replace(/十/g, '1')
+                 .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
+                 .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
+                 .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9');
+
+            let regex = /\s*(\d{1,4}件)/g;
+            let match;
+            let results = [];
+
+            while ((match = regex.exec(t)) !== null) {
+                results.push({
+                    index: match.index,
+                    num: match[1]
+                });
+            }
+            results.sort((a, b) => a.index - b.index);
+            return results;
+        }
+
+        // 音声認識されたテキストから時刻群を正確に抽出してペアリングするヘルパー
+        function extractTimesFromTranscript(text) {
+            let t = text;
+            // 漢数字の簡易置換
+            t = t.replace(/十/g, '1')
+                 .replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3')
+                 .replace(/四/g, '4').replace(/五/g, '5').replace(/六/g, '6')
+                 .replace(/七/g, '7').replace(/八/g, '8').replace(/九/g, '9')
+                 .replace(/半/g, '30分');
+
+            // 「◯時◯分」や「◯時」のパターンを全て抽出する
+            // 例: "9時" と "17時" や "9時半" と "17時" など
+            let regex = /(午前|午後|夕方|夜)?\D*\s*(\d{1,2})\s*時(\s*(\d{1,2})\s*分)?/g;
+            let match;
+            let results = [];
+
+            while ((match = regex.exec(t)) !== null) {
+                let ampm = match[1];
+                let h = parseInt(match[2], 10);
+                let m = match[4] ? parseInt(match[4], 10) : 0;
+
+                if (ampm && (ampm.includes('午後') || ampm.includes('夕方') || ampm.includes('夜'))) {
+                    if (h < 12) h += 12;
+                } else if (!ampm && h >= 1 && h <= 6) {
+                    // 午前指定がなく、1〜6時の場合は一般的な仕事時間に合わせて午後(+12)とする
+                    h += 12;
+                }
+
+                if (h > 23) h = 23;
+                if (m > 59) m = 59;
+
+                results.push({
+                    index: match.index,
+                    formatted: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+                });
+            }
+
+            // 出現順（文字列内のインデックス順）にソートする
+            results.sort((a, b) => a.index - b.index);
+
+            return results.map(r => r.formatted);
+        }
+
+        function extractMinutesFromTranscript(text) {
+            const regex = /(?<!\d)(?<!\d[時:：])(\d{1,3}分)/g;
+            let match;
+            const results = [];
+            while ((match = regex.exec(text)) !== null) {
+                results.push(match[1]);
+            }
+            return results;
+        }
+
+        function processVoiceCommand(transcript) {
+            const results = parseDayWord(transcript);
+            let day = results[0];
+
+            const format = parseInt(document.getElementById('report-format').value);
+            if (day) {
+                if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                    if (format === 1) {
+                        const evalType = document.getElementById('f1-eval-type-1');
+                        const textEl = document.getElementById(`f1-text-${day.num}`);
+                        const evalEl = document.getElementById(`f1-eval-${day.num}`);
+                        if (textEl) textEl.value = '';
+                        if (evalEl && (evalType.value === '件数' || evalType.value === '配分金')) {
+                            evalEl.value = '';
+                        }
+                    } else if (format === 2) {
+                        const el1 = document.getElementById(`f2-num1-${day.num}`);
+                        const el2 = document.getElementById(`f2-num2-${day.num}`);
+                        if (el1) el1.value = '';
+                        if (el2) el2.value = '';
+                    } else if (format === 3) {
+                        const startEl = document.getElementById(`f3-start-${day.num}`);
+                        const endEl = document.getElementById(`f3-end-${day.num}`);
+                        const breakEl = document.getElementById(`f3-break-${day.num}`);
+                        if (startEl) startEl.value = '';
+                        if (endEl) endEl.value = '';
+                        if (breakEl) breakEl.value = '';
+                    } else if (format === 4) {
+                        const s1El = document.getElementById(`f4-start1-${day.num}`);
+                        const e1El = document.getElementById(`f4-end1-${day.num}`);
+                        const s2El = document.getElementById(`f4-start2-${day.num}`);
+                        const e2El = document.getElementById(`f4-end2-${day.num}`);
+                        if (s1El) s1El.value = '';
+                        if (e1El) e1El.value = '';
+                        if (s2El) s2El.value = '';
+                        if (e2El) e2El.value = '';
+                    }
+                } else if (transcript.includes('同じ') || transcript.includes('をコピー') || transcript.includes('を複写')) {
+                    const day2 = results[1];
+                    if (day2) {
+                        if (format === 1) {
+                            const textEl = document.getElementById(`f1-text-${day.num}`);
+                            const evalEl = document.getElementById(`f1-eval-${day.num}`);
+                            const srcText = document.getElementById(`f1-text-${day2.num}`);
+                            const srcEval = document.getElementById(`f1-eval-${day2.num}`);
+                            if (textEl && srcText) textEl.value = srcText.value;
+                            if (evalEl && srcEval) evalEl.value = srcEval.value;
+                        } else if (format === 2) {
+                            const el1 = document.getElementById(`f2-num1-${day.num}`);
+                            const el2 = document.getElementById(`f2-num2-${day.num}`);
+                            const src1 = document.getElementById(`f2-num1-${day2.num}`);
+                            const src2 = document.getElementById(`f2-num2-${day2.num}`);
+                            if (el1 && src1) el1.value = src1.value;
+                            if (el2 && src2) el2.value = src2.value;
+                        } else if (format === 3) {
+                            const startEl = document.getElementById(`f3-start-${day.num}`);
+                            const endEl = document.getElementById(`f3-end-${day.num}`);
+                            const breakEl = document.getElementById(`f3-break-${day.num}`);
+                            const srcS = document.getElementById(`f3-start-${day2.num}`);
+                            const srcE = document.getElementById(`f3-end-${day2.num}`);
+                            const srcB = document.getElementById(`f3-break-${day2.num}`);
+                            if (startEl && srcS) startEl.value = srcS.value;
+                            if (endEl && srcE) endEl.value = srcE.value;
+                            if (breakEl && srcB) breakEl.value = srcB.value;
+                        } else if (format === 4) {
+                            const s1El = document.getElementById(`f4-start1-${day.num}`);
+                            const e1El = document.getElementById(`f4-end1-${day.num}`);
+                            const s2El = document.getElementById(`f4-start2-${day.num}`);
+                            const e2El = document.getElementById(`f4-end2-${day.num}`);
+                            const srcS1 = document.getElementById(`f4-start1-${day2.num}`);
+                            const srcE1 = document.getElementById(`f4-end1-${day2.num}`);
+                            const srcS2 = document.getElementById(`f4-start2-${day2.num}`);
+                            const srcE2 = document.getElementById(`f4-end2-${day2.num}`);
+                            if (s1El && srcS1) s1El.value = srcS1.value;
+                            if (e1El && srcE1) e1El.value = srcE1.value;
+                            if (s2El && srcS2) s2El.value = srcS2.value;
+                            if (e2El && srcE2) e2El.value = srcE2.value;
+                        }
+                    }
+                } else {
+                    if (format === 1) {
+                        const evalType = document.getElementById('f1-eval-type-1');
+                        const textEl = document.getElementById(`f1-text-${day.num}`);
+                        const evalEl = document.getElementById(`f1-eval-${day.num}`);
+                        if (textEl) {
+                            textEl.value = parseTownName(transcript);
+                            activeInput = evalEl;
+                        }
+                        if (evalEl) {
+                            if (evalType.value === '件数') {
+                                evalEl.value = extractNumberWithUnitFromTranscript(transcript, 1);
+                            } else if (evalType.value === '配分金') {
+                                evalEl.value = extractNumberWithUnitFromTranscript(transcript, 2);
+                            }
+                        }
+                    } else if (format === 2) {
+                        const el1 = document.getElementById(`f2-num1-${day.num}`);
+                        const el2 = document.getElementById(`f2-num2-${day.num}`);
+                        const numbers = extractNumbersFromTranscript(transcript);
+                        if (numbers.length >= 1 && el1) {
+                            el1.value = numbers[0].num;
+                            if (el2) activeInput = el2;
+                        }
+                        if (numbers.length >= 2 && el2) {
+                            el2.value = numbers[1].num;
+                        }
+                    } else if (format === 3) {
+                        const times = extractTimesFromTranscript(transcript);
+                        const minutes = extractMinutesFromTranscript(transcript);
+                        const startEl = document.getElementById(`f3-start-${day.num}`);
+                        const endEl = document.getElementById(`f3-end-${day.num}`);
+                        const breakEl = document.getElementById(`f3-break-${day.num}`);
+                        if (times.length >= 1 && startEl) {
+                            startEl.value = times[0];
+                            if (endEl) activeInput = endEl;
+                        }
+                        if (times.length >= 2 && endEl) {
+                            endEl.value = times[1];
+                            if (breakEl) activeInput = breakEl;
+                        }
+                        if (minutes.length >= 1 && breakEl) {
+                            breakEl.value = minutes[0];
+                        }
+                    } else if (format === 4) {
+                        const s1El = document.getElementById(`f4-start1-${day.num}`);
+                        const e1El = document.getElementById(`f4-end1-${day.num}`);
+                        const s2El = document.getElementById(`f4-start2-${day.num}`);
+                        const e2El = document.getElementById(`f4-end2-${day.num}`);
+                        const times = extractTimesFromTranscript(transcript);
+                        if (times.length >= 1 && s1El) {
+                            s1El.value = times[0];
+                            if (e1El) activeInput = e1El;
+                        }
+                        if (times.length >= 2 && e1El) {
+                            e1El.value = times[1];
+                            if (s2El) activeInput = s2El;
+                        }
+                        if (times.length >= 3 && s2El) {
+                            s2El.value = times[2];
+                            if (e2El) activeInput = e2El;
+                        }
+                        if (times.length >= 4 && e2El) {
+                            e2El.value = times[3];
+                        }
+                    }
+                }
+            } else if (activeInput) {
+                if (transcript.includes('消して') || transcript.includes('消去') || transcript.includes('クリア') || transcript.includes('削除')) {
+                    activeInput.value = '';
+                } else if (day === 0 && activeInput.id.includes(`f-day`)) {
+                    const numbers = extractNumbersFromTranscript(transcript);
+                    if (numbers.length > 0) activeInput.value = numbers[0].num;
+                } else if (format === 1) {
+                    if (activeInput.id.includes(`f1-text`)) {
+                        activeInput.value = parseTownName(transcript);
+                    } else if (activeInput.id.includes(`f1-eval`)) {
+                        activeInput.value = extractNumberFromTranscript(transcript);
+                    }
+                } else if (format === 2) {
+                    const numbers = extractNumbersFromTranscript(transcript);
+                    if (numbers.length > 0) activeInput.value = numbers[0].num;
+                } else if (format === 3) {
+                    const times = extractTimesFromTranscript(transcript);
+                    const minutes = extractMinutesFromTranscript(transcript);
+                    if (activeInput.id.includes('start') || activeInput.id.includes('end')) {
+                        if (times.length > 0) activeInput.value = times[0];
+                    } else {
+                        if (minutes.length > 0) activeInput.value = minutes[0];
+                    }
+                } else if (format === 4) {
+                    const times = extractTimesFromTranscript(transcript);
+                    if (times.length > 0) activeInput.value = times[0];
+                }
+            }
+            calculateTotals();
+            currentFormDataCache = collectFormData(); // ★ここでキャッシュを最新に更新
+            fixMobileLayout();                        // ★その後にレイアウトを更新
+            triggerAutoSave();
+        }
+    </script>
+</body>
+</html>
