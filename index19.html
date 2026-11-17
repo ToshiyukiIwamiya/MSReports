@@ -201,8 +201,43 @@
                 font-size: 15px !important;
                 padding: 4px 6px !important; /* 文字が大きくなった分の上下左右の余白を調整 */
             }
-        }            
-            
+            /* スマホモード時は不要なボタン群を隠す */
+            body.mobile-mode-active .desktop-only-btn {
+                display: none !important;
+            }
+
+            /* 音声入力ボタンを右下にフローティング固定（親指で押しやすいサイズに） */
+            body.mobile-mode-active #voice-btn {
+                position: fixed !important;
+                bottom: 16px !important;
+                right: 16px !important;
+                z-index: 50 !important;
+                padding: 14px 22px !important;
+                font-size: 16px !important;
+                font-weight: bold !important;
+                border-radius: 9999px !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+            }
+
+            /* 音声認識のステータス・結果を画面下部に浮かせてスクロール不要にする */
+            body.mobile-mode-active #voice-status,
+            body.mobile-mode-active #voice-transcript-display {
+                position: fixed !important;
+                bottom: 20px !important;
+                left: 16px !important;
+                right: 150px !important; /* 右下の音声ボタンと被らない余白 */
+                z-index: 49 !important;
+                background-color: rgba(15, 23, 42, 0.88) !important;
+                color: #ffffff !important;
+                padding: 8px 14px !important;
+                border-radius: 8px !important;
+                font-size: 14px !important;
+                margin: 0 !important;
+            }
+            /* 空のときは隠す */
+            body.mobile-mode-active #voice-transcript-display:empty {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -228,32 +263,32 @@
                 <span id="voice-btn-text">音声入力</span>
             </button>
 
-            <label class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded shadow cursor-pointer transition flex items-center">
+            <label class="desktop-only-btn bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded shadow cursor-pointer transition flex items-center">
                 <span>ファイル読込</span>
                 <input type="file" id="import-file" accept=".json" multiple class="hidden" onchange="importJSONFiles(event);">
             </label>
 
-            <button onclick="exportJSONFile();" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+            <button onclick="exportJSONFile();" class="desktop-only-btn bg-slate-700 hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 ファイル保存
             </button>
 
-            <button onclick="clearLocalStorageAndReload();" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-medium px-3 py-1.5 rounded shadow transition">
+            <button onclick="clearLocalStorageAndReload();" class="desktop-only-btn bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 クリア
             </button>
 
-            <button onclick="window.print();" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+            <button onclick="window.print();" class="desktop-only-btn bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 印刷
             </button>
 
-            <button onclick="saveAsPDF();" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+            <button onclick="saveAsPDF();" class="desktop-only-btn bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 PDF保存 (JSON添付)
             </button>
 
-            <button onclick="sendEmailReport();" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+            <button onclick="sendEmailReport();" class="desktop-only-btn bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 メール送信
             </button>
 
-            <button onclick="openHistoryModal()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
+            <button onclick="openHistoryModal()" class="desktop-only-btn bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium px-3 py-1.5 rounded shadow transition">
                 提出履歴管理
             </button>
         </div>
@@ -700,6 +735,7 @@
             const headerSelectorsContainer = document.getElementById('header-selectors-container'); 
 
             if (isMobileLayout) {
+                document.body.classList.add('mobile-mode-active');
                 toggleText.textContent = "📄 標準表示(書類形式)へ";
                 toggleBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 toggleBtn.classList.add('bg-slate-700', 'hover:bg-slate-800');
@@ -773,6 +809,7 @@
                 }
                 populateMobileQuickDays();
             } else {
+                document.body.classList.remove('mobile-mode-active');
                 toggleText.textContent = "📱 スマホ入力モードへ";
                 toggleBtn.classList.remove('bg-slate-700', 'hover:bg-slate-800');
                 toggleBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
